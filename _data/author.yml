@@ -1,0 +1,9 @@
+# 个人信息
+author:
+  name: 你的名字
+  avatar: /assets/images/avatar.jpg
+  bio: 简短的个人简介
+  contacts:
+    email: your@email.com
+    github: yourgithub
+    twitter: yourtwitter

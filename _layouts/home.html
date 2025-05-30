@@ -1,0 +1,20 @@
+---
+layout: default
+---
+
+<div class="home-layout">
+  {% include sidebar.html %}
+  
+  <div class="recent-posts">
+    <h2>最近更新</h2>
+    {% for post in site.posts limit:10 %}
+      <article class="post-preview">
+        <h3><a href="{{ post.url | relative_url }}">{{ post.title }}</a></h3>
+        <time datetime="{{ post.date | date_to_xmlschema }}">
+          {{ post.date | date: "%Y-%m-%d" }}
+        </time>
+        <p>{{ post.excerpt | strip_html | truncate: 100 }}</p>
+      </article>
+    {% endfor %}
+  </div>
+</div>

@@ -1,0 +1,4 @@
+destination: docs
+sass:
+  sass_dir: _sass
+  style: compact # possible values: nested expanded compact compressed

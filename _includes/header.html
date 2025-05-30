@@ -1,0 +1,13 @@
+<header class="site-header">
+  <nav class="navbar">
+    <div class="container">
+      {% for item in site.data.navigation %}
+        {% assign full_url = item.url | relative_url %}
+        <a href="{{ full_url }}" 
+           {% if page.url == full_url %}class="active"{% endif %}>
+          {{ item.name }}
+        </a>
+      {% endfor %}
+    </div>
+  </nav>
+</header>

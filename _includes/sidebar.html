@@ -1,0 +1,17 @@
+<aside class="sidebar">
+  <div class="profile">
+    <img src="{{ site.data.author.author.avatar | relative_url }}" 
+         alt="头像" class="avatar">
+    <h2>{{ site.data.author.author.name }}</h2>
+    <p>{{ site.data.author.author.bio }}</p>
+  </div>
+  
+  <div class="contacts">
+    <h3>联系方式</h3>
+    <ul>
+      <li>📧 {{ site.data.author.author.contacts.email }}</li>
+      <li>🐱 {{ site.data.author.author.contacts.github }}</li>
+      <li>🐦 {{ site.data.author.author.contacts.twitter }}</li>
+    </ul>
+  </div>
+</aside>

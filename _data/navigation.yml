@@ -1,0 +1,10 @@
+- name: "首页"
+  link: "/"
+- name: "专栏1"
+  link: "/category1.html"
+- name: "专栏2"
+  link: "/category2.html"
+- name: "关于"
+  link: "/about.html"
+
+    
