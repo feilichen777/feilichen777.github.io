@@ -1,0 +1,93 @@
+---
+layout: default
+---
+
+<article class="post-article">
+  <header class="post-header">
+    <div class="post-meta">
+      
+      <time datetime="{{ page.date | date_to_xmlschema }}">
+        {{ page.date | date: "%Y年%m月%d日" }}
+      </time>
+      <span class="read-time">
+        {% assign words = content | number_of_words %}
+        {% if words < 360 %}1 分钟阅读{% else %}{{ words | divided_by:180 }} 分钟阅读{% endif %}
+      </span>
+    </div>
+    
+    <h1 class="post-title">{{ page.title }}</h1>
+    
+    {% if page.subtitle %}
+      <h2 class="post-subtitle">{{ page.subtitle }}</h2>
+    {% endif %}
+    
+    <div class="post-tags">
+      {% for tag in page.tags %}
+        <span class="tag">{{ tag }}</span>
+      {% endfor %}
+    </div>
+    
+    {% if page.cover_image %}
+      <figure class="post-cover">
+        <img src="{{ page.cover_image | relative_url }}" alt="{{ page.title }} 封面图">
+        {% if page.cover_caption %}
+          <figcaption>{{ page.cover_caption }}</figcaption>
+        {% endif %}
+      </figure>
+    {% endif %}
+  </header>
+  
+  <div class="post-content">
+    {{ content }}
+  </div>
+  
+  <footer class="post-footer">
+    <div class="post-author">
+      <div class="author-info">
+        <img src="{{ site.author.avatar | relative_url }}" alt="{{ site.author.name }}" class="author-avatar">
+        <div>
+          <h4>{{ site.author.name }}</h4>
+          <p>{{ site.author.bio }}</p>
+        </div>
+      </div>
+      <div class="author-meta">
+        <span>发布于 {{ page.date | date: "%Y年%m月%d日" }}</span>
+        <span>最后更新于 {{ page.last_modified_at | date: "%Y年%m月%d日" | default: page.date | date: "%Y年%m月%d日" }}</span>
+      </div>
+    </div>
+    
+    <div class="post-navigation">
+      {% if page.previous %}
+        <a href="{{ page.previous.url | relative_url }}" class="prev-post">
+          <span>上一篇</span>
+          <h4>{{ page.previous.title }}</h4>
+        </a>
+      {% endif %}
+      
+      {% if page.next %}
+        <a href="{{ page.next.url | relative_url }}" class="next-post">
+          <span>下一篇</span>
+          <h4>{{ page.next.title }}</h4>
+        </a>
+      {% endif %}
+    </div>
+    
+    <div class="related-posts">
+      <h3>相关文章</h3>
+      <div class="related-grid">
+        {% assign related = site.related_posts | limit: 3 %}
+        {% for post in related %}
+          <a href="{{ post.url | relative_url }}" class="related-card">
+            {% if post.cover_image %}
+              <img src="{{ post.cover_image | relative_url }}" alt="{{ post.title }}">
+            {% endif %}
+            <div class="related-content">
+              <h4>{{ post.title }}</h4>
+              <time>{{ post.date | date: "%Y年%m月%d日" }}</time>
+            </div>
+          </a>
+        {% endfor %}
+      </div>
+    </div>
+  </footer>
+</article>

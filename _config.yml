@@ -2,3 +2,49 @@ destination: docs
 sass:
   sass_dir: _sass
   style: compact # possible values: nested expanded compact compressed
+
+# 专栏配置
+category_list:
+  - name: "电机控制"
+    category: motorcontrol
+    url: "/motorcontrol"
+    description: "深入探索编程语言、框架和系统设计"
+    stats: true
+    last_update: 2024-05-30
+    
+  - name: "电动飞机"
+    category: electricalplane
+    url: "/electricalplane"
+    description: "记录生活点滴与个人思考"
+    stats: true
+    last_update: 2024-05-28
+    
+  - name: "读书笔记"
+    category: reading
+    url: "/reading"
+    description: "分享阅读心得与书评"
+    stats: true
+    last_update: 2024-05-25
+
+#导航栏设置
+navigation:
+  - name: "首页"
+    url: "/"
+  - name: "电机控制"
+    url: "/motorcontrol"
+  - name: "电动飞机"
+    url: "/electricalplane"
+  - name: "读书笔记"
+    url: "/reading"
+  - name: "关于"
+    url: "/about"
+
+# 个人信息
+author:
+  name: 你的名字
+  avatar: /assets/images/avatar.jpg
+  bio: 简短的个人简介
+  contacts:
+    email: your@email.com
+    github: yourgithub
+    twitter: yourtwitter

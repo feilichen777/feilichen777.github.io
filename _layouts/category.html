@@ -1,0 +1,76 @@
+---
+layout: default
+---
+
+<div class="category-layout">
+  <div class="category-header">
+    <h1>{{ page.title }}</h1>
+    <p class="category-description">{{ page.description | default: "这里收集了所有关于" | append: page.title | append: "的文章" }}</p>
+  </div>
+  
+  <div class="category-content">
+    {% if site.categories[page.category] %}
+      <div class="category-posts">
+        {% for post in site.categories[page.category] %}
+          <article class="post-card">
+            <div class="post-meta">
+              <time datetime="{{ post.date | date_to_xmlschema }}">
+                {{ post.date | date: "%Y年%m月%d日" }}
+              </time>
+              {% if post.tags %}
+                <div class="post-tags">
+                  {% for tag in post.tags %}
+                    <span class="tag">{{ tag }}</span>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </div>
+            <h2><a href="{{ post.url | relative_url }}">{{ post.title }}</a></h2>
+            <p class="post-excerpt">{{ post.excerpt | strip_html | truncate: 200 }}</p>
+            <a href="{{ post.url | relative_url }}" class="read-more">阅读全文 →</a>
+          </article>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="no-posts">
+        <p>该专栏下还没有文章。</p>
+        <a href="{{ "/" | relative_url }}" class="btn">返回首页</a>
+      </div>
+    {% endif %}
+    
+    <!-- 专栏信息侧边栏 -->
+    <aside class="category-sidebar">
+      <div class="category-info">
+        <h3>关于本专栏</h3>
+        <p>{{ page.description | default: "本专栏收集了关于" | append: page.title | append: "的技术文章和思考。" }}</p>
+        
+        {% if page.stats %}
+        <div class="category-stats">
+          <div class="stat">
+            <span class="number">{{ site.categories[page.category].size }}</span>
+            <span class="label">篇文章</span>
+          </div>
+          <div class="stat">
+            <span class="number">{{ page.last_update | default: "2024-05-30" | date: "%Y年%m月" }}</span>
+            <span class="label">最后更新</span>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+      
+      <div class="related-categories">
+        <h3>其他专栏</h3>
+        <ul>
+          {% for category in site.category_list %}
+            {% if category.name != page.title %}
+              <li>
+                <a href="{{ category.url | relative_url }}">{{ category.name }}</a>
+                <span>({{ site.categories[category.category].size }})</span>
+              </li>
+            {% endif %}
+          {% endfor %}
+        </ul>
+      </div>
+    </aside>
+  </div>
+</div>
