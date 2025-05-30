@@ -1,0 +1,56 @@
+
+/* 分页样式 */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 40px;
+  padding: 20px 0;
+  border-top: 1px solid #eee;
+  
+  a, span {
+    margin: 0 10px;
+    padding: 8px 16px;
+    text-decoration: none;
+    color: #333;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    transition: all 0.3s;
+  }
+  
+  a:hover {
+    background: #f5f5f5;
+  }
+  
+  .pagination-prev,
+  .pagination-next {
+    background: #f8f9fa;
+  }
+  
+  .pagination-current {
+    background: #1abc9c;
+    color: white;
+    border-color: #1abc9c;
+  }
+}
+
+/* 响应式分页 */
+@media (max-width: 768px) {
+  .pagination {
+    flex-wrap: wrap;
+    text-align: center;
+    
+    .pagination-prev,
+    .pagination-next {
+      order: 1;
+      width: calc(50% - 20px);
+      margin: 10px 5px;
+    }
+    
+    .pagination-current {
+      order: 0;
+      width: 100%;
+      margin-bottom: 15px;
+    }
+  }
+}

@@ -5,7 +5,7 @@ layout: default
 <div class="category-layout">
   <div class="category-header">
     <h1>{{ page.title }}</h1>
-    <p class="category-description">{{ page.description | default: "这里收集了所有关于" | append: page.title | append: "的文章" }}</p>
+    <p class="category-description">{{ page.description }}</p>
   </div>
   
   <div class="category-content">
@@ -42,7 +42,7 @@ layout: default
     <aside class="category-sidebar">
       <div class="category-info">
         <h3>关于本专栏</h3>
-        <p>{{ page.description | default: "本专栏收集了关于" | append: page.title | append: "的技术文章和思考。" }}</p>
+        <p>{{ page.description }}</p>
         
         {% if page.stats %}
         <div class="category-stats">

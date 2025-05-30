@@ -7,7 +7,8 @@ layout: default
   
   <div class="recent-posts">
     <h2>最近更新</h2>
-    {% for post in site.posts limit:10 %}
+    <!-- 分页文章列表 -->
+    {% for post in paginator.posts %}
       <article class="post-preview">
         <h3><a href="{{ post.url | relative_url }}">{{ post.title }}</a></h3>
         <time datetime="{{ post.date | date_to_xmlschema }}">
@@ -16,5 +17,24 @@ layout: default
         <p>{{ post.excerpt | strip_html | truncate: 100 }}</p>
       </article>
     {% endfor %}
+    
+    <!-- 分页导航 -->
+    <div class="pagination">
+      {% if paginator.previous_page %}
+        <a href="{{ paginator.previous_page_path | relative_url }}" class="pagination-prev">
+          &laquo; 上一页
+        </a>
+      {% endif %}
+      
+      <span class="pagination-current">
+        第 {{ paginator.page }} 页 / 共 {{ paginator.total_pages }} 页
+      </span>
+      
+      {% if paginator.next_page %}
+        <a href="{{ paginator.next_page_path | relative_url }}" class="pagination-next">
+          下一页 &raquo;
+        </a>
+      {% endif %}
+    </div>
   </div>
 </div>

@@ -1,0 +1,46 @@
+/* 导航栏样式 */
+.navbar {
+  background: white; /* 改为白色背景 */
+  padding: 1.5rem 0;
+  border-bottom: 1px solid #eee; /* 底部细线分隔 */
+  
+  .container {
+    max-width: 100%; /* 导航栏全宽 */
+    padding: 0 50px; /* 与内容区对齐 */
+    display: flex;
+    justify-content: space-between; /* 关键：左右对齐 */
+    align-items: center;
+  }
+  
+  a {
+    color: #333;
+    font-weight: 500;
+    margin-right: 30px;
+    position: relative;
+    
+    &:after {
+      content: '';
+      position: absolute;
+      bottom: -5px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: #1abc9c;
+      transition: width 0.3s;
+    }
+    
+    &:hover:after, 
+    &.active:after {
+      width: 100%;
+    }
+  }
+}
+/* 导航链接容器 */
+.nav-links {
+  display: flex;
+  flex: 1; /* 占据剩余空间 */
+  
+  a {
+    margin-right: 30px;
+  }
+}

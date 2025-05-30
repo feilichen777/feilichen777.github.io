@@ -1,7 +1,17 @@
+#输出结果放置docs文件夹内
 destination: docs
+
+plugins:
+  - jekyll-paginate
+
+#css文件调用路径
 sass:
   sass_dir: _sass
   style: compact # possible values: nested expanded compact compressed
+  
+# 启用分页功能
+paginate: 4
+paginate_path: "/page:num/"
 
 # 专栏配置
 category_list:

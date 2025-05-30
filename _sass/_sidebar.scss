@@ -1,0 +1,57 @@
+/* 侧边栏样式 */
+.sidebar {
+  padding: 25px;
+  border-right: 1px solid #f0f0f0;
+  
+  .profile {
+    text-align: center;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #f0f0f0;
+    margin-bottom: 25px;
+    
+    .avatar {
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 5px solid #f9f9f9;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    }
+    
+    h2 {
+      margin: 15px 0 10px;
+    }
+    
+    p {
+      color: #666;
+      font-size: 0.95rem;
+    }
+  }
+  
+  .contacts {
+    h3 {
+      font-size: 1.1rem;
+      margin-bottom: 15px;
+      color: #555;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 8px;
+    }
+    
+    ul {
+      list-style: none;
+      padding-left: 0;
+      
+      li {
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        
+        &::before {
+          content: "•";
+          color: #1abc9c;
+          margin-right: 8px;
+        }
+      }
+    }
+  }
+}

@@ -19,11 +19,38 @@
     },
   
     {
+      "title": "ttt",
+      "url": "http://localhost:4000/electricalplane/2025/03/11/hhh.html",
+      "date": "2025-03-11T00:00:00+08:00",
+      "categories": ["electricalplane"],
+      "tags": [],
+      "content": "这里是博客内容…"
+    },
+  
+    {
       "title": "深入理解Jekyll静态网站生成器",
       "url": "http://localhost:4000/motorcontrol/2024/05/30/blogtest.html",
       "date": "2024-05-30T00:00:00+08:00",
       "categories": ["motorcontrol"],
       "tags": ["Jekyll","GitHub Pages","静态网站"],
+      "content": "这里是博客内容…"
+    },
+  
+    {
+      "title": "qqq",
+      "url": "http://localhost:4000/electricalplane/2024/01/22/qqq.html",
+      "date": "2024-01-22T00:00:00+08:00",
+      "categories": ["electricalplane"],
+      "tags": [],
+      "content": "这里是博客内容…"
+    },
+  
+    {
+      "title": "kkk",
+      "url": "http://localhost:4000/electricalplane/2023/12/31/kkk.html",
+      "date": "2023-12-31T00:00:00+08:00",
+      "categories": ["electricalplane"],
+      "tags": [],
       "content": "这里是博客内容…"
     }
   
