@@ -234,44 +234,6 @@
 .post-content code {
   font-family: "Fira Code", Consolas, Monaco, "Andale Mono", monospace;
 }
-.post-content ul, .post-content ol {
-  margin-left: 1.5rem;
-  margin-bottom: 1.8rem;
-}
-.post-content ul li, .post-content ol li {
-  margin-bottom: 0.8rem;
-  position: relative;
-}
-.post-content ul li::before, .post-content ol li::before {
-  content: "";
-  position: absolute;
-  left: -1.2rem;
-  top: 0.7rem;
-  width: 6px;
-  height: 6px;
-  background: #1abc9c;
-  border-radius: 50%;
-}
-.post-content ol {
-  counter-reset: list-counter;
-}
-.post-content ol li {
-  counter-increment: list-counter;
-}
-.post-content ol li::before {
-  content: counter(list-counter);
-  background: #f0f7ff;
-  color: #3498db;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.8rem;
-  top: 0.3rem;
-  left: -2.2rem;
-}
 .post-content table {
   width: 100%;
   border-collapse: collapse;

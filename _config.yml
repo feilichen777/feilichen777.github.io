@@ -1,8 +1,13 @@
 #输出结果放置docs文件夹内
 destination: docs
-
+#插件
 plugins:
   - jekyll-paginate
+
+# 使用 kramdown 作为 Markdown 解析器
+markdown: kramdown
+# 启用 MathJax 支持（部分主题需此配置）
+mathjax: true
 
 #css文件调用路径
 sass:
@@ -18,23 +23,17 @@ category_list:
   - name: "电机控制"
     category: motorcontrol
     url: "/motorcontrol"
-    description: "深入探索编程语言、框架和系统设计"
     stats: true
-    last_update: 2024-05-30
     
-  - name: "电动飞机"
-    category: electricalplane
-    url: "/electricalplane"
-    description: "记录生活点滴与个人思考"
-    stats: true
-    last_update: 2024-05-28
+  #- name: "电动飞机"
+  #  category: electricalplane
+  #  url: "/electricalplane"
+  #  stats: true
     
-  - name: "读书笔记"
-    category: reading
-    url: "/reading"
-    description: "分享阅读心得与书评"
-    stats: true
-    last_update: 2024-05-25
+  #- name: "读书笔记"
+  #  category: reading
+  # url: "/reading"
+  #  stats: true
 
 #导航栏设置
 navigation:
@@ -42,19 +41,18 @@ navigation:
     url: "/"
   - name: "电机控制"
     url: "/motorcontrol"
-  - name: "电动飞机"
-    url: "/electricalplane"
-  - name: "读书笔记"
-    url: "/reading"
-  - name: "关于"
-    url: "/about"
+  #- name: "电动飞机"
+  #  url: "/electricalplane"
+  #- name: "读书笔记"
+  #  url: "/reading"
+  #- name: "关于"
+  #  url: "/about"
 
 # 个人信息
 author:
-  name: 你的名字
+  name: Feili
   avatar: /assets/images/avatar.jpg
-  bio: 简短的个人简介
+  bio: 努力学习，天天向上
   contacts:
-    email: your@email.com
-    github: yourgithub
-    twitter: yourtwitter
+    email: 420848172@qq.com
+    github: feilichen777.github.io

@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>PMSM电机控制（一）：永磁同步电机的基本模型</title>
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <!-- add support for mathjax by voleking-->
+  
+    <!-- MathJax 3.x 最新版 -->
+<script>
+MathJax = {
+  tex: {
+    inlineMath: [['$', '$'], ['\\(', '\\)']], // 内联公式分隔符
+    displayMath: [['$$', '$$'], ['\\[', '\\]']], // 块级公式分隔符
+    packages: {'[+]': ['physics']} // 可选：添加扩展包:cite[1]
+  },
+  svg: { fontCache: 'global' },
+  loader: { load: ['[tex]/physics'] } // 加载扩展包
+};
+</script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  
+</head>
+<body>
+  <div class="page-container">
+    <header class="site-header">
+  <nav class="navbar">
+    <div class="container">
+      <!-- 左侧导航链接 -->
+      <div class="nav-links">
+        
+          
+          <a href="/" 
+             >
+            首页
+          </a>
+        
+          
+          <a href="/motorcontrol" 
+             >
+            电机控制
+          </a>
+        
+      </div>
+      
+      <!-- 右侧搜索框 -->
+      <div class="search-container">
+        <form id="search-form" class="search-form">
+          <input type="text" id="search-input" placeholder="搜索文章..." aria-label="搜索文章">
+          <button type="submit" aria-label="搜索">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+            </svg>
+          </button>
+        </form>
+        <!-- 搜索结果悬浮层 -->
+        <div id="search-results" class="search-results"></div>
+      </div>
+    </div>
+  </nav>
+</header>
+    <main class="container">
+      <article class="post-article">
+  <header class="post-header">
+    <div class="post-meta">
+      
+      <time datetime="2025-05-30T00:00:00+08:00">
+        2025年05月30日
+      </time>
+      <span class="read-time">
+        
+        1 分钟阅读
+      </span>
+    </div>
+    
+    <h1 class="post-title">PMSM电机控制（一）：永磁同步电机的基本模型</h1>
+    
+    
+    
+    <div class="post-tags">
+      
+        <span class="tag">PMSM</span>
+      
+    </div>
+    
+    
+  </header>
+  
+  <div class="post-content">
+    <p>无论你是在苦苦学习电机的同学，又或是工作上接触了永磁同步电机，想必都听过表贴式、内置式、凸极式、隐极式这些术语。</p>
+
+<p>这确实是电机学中容易混淆的概念组合。理解永磁同步电机（PMSM）中这些术语的区别，是掌握其核心特性的关键。</p>
+
+<h1 id="一永磁同步电机的分类">一、永磁同步电机的分类</h1>
+
+<ol>
+  <li>
+    <p><strong>永磁体的安装方式（机械结构）</strong>：描述磁铁如何物理地放置在转子上。</p>
+
+    <ul>
+      <li>
+        <p><strong>表贴式</strong>：永磁体贴在转子铁芯的外表面。</p>
+      </li>
+      <li>
+        <p><strong>内置式</strong>：永磁体嵌入或埋在转子铁芯内部。</p>
+      </li>
+    </ul>
+  </li>
+  <li>
+    <p><strong>磁路对称性（电磁特性）</strong>：描述电机是否在电磁性能上表现出凸极性（直轴和交轴磁路不对称）。</p>
+
+    <ul>
+      <li>
+        <p><strong>凸极式</strong>：直轴磁阻与交轴磁阻显著不同。</p>
+      </li>
+      <li>
+        <p><strong>隐极式</strong>：直轴磁阻与交轴磁阻基本相同（磁路对称）。</p>
+      </li>
+    </ul>
+  </li>
+</ol>
+
+<p><img src="http://localhost:4000/assets/images/PMSM_1_1.png" alt="PMSM结构图" /></p>
+
+<h1 id="二自然坐标系下的pmsm方程">二、自然坐标系下的PMSM方程</h1>
+<p>为了简化分析，我们假设三相PMSM为理想电机，且满足下列条件：</p>
+<ol>
+  <li>永磁磁场和电枢磁场在气隙中均为正弦分布。</li>
+  <li>忽略电机铁芯的饱和；</li>
+  <li>不计电机中的涡流和磁滞损耗；</li>
+  <li>电机中的电流为对称的三相电流。</li>
+</ol>
+
+<h2 id="21-电压方程">2.1 电压方程</h2>
+
+\[\left[ \begin{matrix}
+   u_a \\
+   u_b \\
+   u_c 
+  \end{matrix}
+  \right] = \left[
+ \begin{matrix}
+   R_s &amp; 0 &amp; 0\\
+   0 &amp; R_s &amp; 0\\
+   0 &amp; 0 &amp; R_s
+  \end{matrix}
+  \right] \left[
+ \begin{matrix}
+   i_a \\
+   i_b \\
+   i_c
+  \end{matrix}
+  \right]+\frac{d}{dt} \left[
+    \begin{matrix}
+        \psi_a \\
+        \psi_b \\
+        \psi_c
+    \end{matrix}
+  \right] \tag{1}\]
+
+<p>其中:$\psi_a,\psi_b,\psi_c$为三相绕组的磁链,$u_a,u_b,u_c$为定子的三相电压，$R_s$为定子绕组的电阻，$i_a,i_b,i_c$为三相电流。</p>
+
+<h2 id="22-磁链方程">2.2 磁链方程</h2>
+
+\[\left[\begin{matrix}
+    \psi_a \\
+    \psi_b \\
+    \psi_c
+\end{matrix}\right]=
+\left[\begin{matrix}
+    L_{aa} &amp; M_{ab} &amp; M_{ac} \\
+    M_{ba} &amp; L_{bb} &amp; M_{bc} \\
+    M_{ca} &amp; M_{cb} &amp; L_{cc}
+\end{matrix}\right]
+\left[\begin{matrix}
+    i_{a} \\
+    i_{b} \\
+    i_{c}
+\end{matrix}\right]+\psi_f
+\left[\begin{matrix}
+    \cos(\theta_e) \\
+    \cos(\theta_e-2\pi/3) \\
+    \cos(\theta_e+2\pi/3)
+\end{matrix}\right] \tag{2}\]
+
+<p>其中:$L_{aa},L_{bb},L_{cc}$为各绕组的自感，$M_{ab},M_{ac},M_{ba},M_{bc},M_{ca},M_{cb}$为各绕组间的互感，$\theta_e$为转子的电角度。</p>
+
+<p>绕组自感为：</p>
+
+\[\begin{align}
+    L_{aa}&amp;=L_{ls}+L_a-L_b\cos(2\theta_e)\\
+    L_{bb}&amp;=L_{ls}+L_a-L_bcos(2(\theta_e-\frac{2\pi}{3}))\\
+    L_{cc}&amp;=L_{ls}+L_a-L_bcos(2(\theta_e+\frac{2\pi}{3}))
+\end{align}\]
+
+<p>绕组互感为：</p>
+
+\[\begin{align}
+    M_{ab}&amp;=-\frac{L_a}{2}+L_b\cos(2\theta_e-\frac{2\pi}{3})\\
+    M_{ac}&amp;=-\frac{L_a}{2}+L_b\cos(2\theta_e+\frac{2\pi}{3})\\
+    M_{bc}&amp;=-\frac{L_a}{2}+L_b\cos(2\theta_e)
+\end{align}\]
+
+<p>其中：$L_{ls}$表示漏感；$L_{a}$表示静止坐标系下，每相自感的平均值（直流量）；$L_{b}$表示静止坐标系下，每相自感波动分量的最大值。</p>
+
+<h2 id="23-电磁转矩方程">2.3 电磁转矩方程</h2>
+
+<p>电磁转矩$T_e$等于磁场储能对机械角度$\theta_m$位移的偏导，因此有</p>
+
+\[T_e=\frac{1}{2}p_n\frac{\partial(i_{3s}^T\cdot\psi_{3s})}{\partial\theta_m} \tag{3}\]
+
+<p>其中：$p_n$为电机的极对数</p>
+
+<h2 id="24-机械运动方程">2.4 机械运动方程</h2>
+
+\[J\frac{d\omega_m}{dt}=T_e-T_L-B\omega_m \tag{4}\]
+
+<p>其中：$\omega_m$为机械角速度，$T_L$为负载转矩，$J$为转动惯量，$B$为阻尼系数。</p>
+
+<p>公式（1）-（4）构成了三相永磁同步电机在自然坐标系下的基本数学模型，可以看出三相PMSM的数学模型是一个非线性、强耦合的多变量系统。为了便于控制器的设计，必须对其进行降阶和解耦。</p>
+
+
+  </div>
+  
+  <footer class="post-footer">
+    <div class="post-author">
+      <div class="author-info">
+        <img src="/assets/images/avatar.jpg" alt="Feili" class="author-avatar">
+        <div>
+          <h4>Feili</h4>
+          <p>努力学习，天天向上</p>
+        </div>
+      </div>
+      <div class="author-meta">
+        <span>发布于 2025年05月30日</span>
+        <span>最后更新于 2025年05月30日</span>
+      </div>
+    </div>
+    
+    <div class="post-navigation">
+      
+      
+      
+        <a href="/motorcontrol/2025/06/03/PMSM_2.html" class="next-post">
+          <span>下一篇</span>
+          <h4>PMSM电机控制（二）：数学模型的坐标变换</h4>
+        </a>
+      
+    </div>
+    
+    <div class="related-posts">
+      <h3>相关文章</h3>
+      <div class="related-grid">
+        
+        
+          <a href="/motorcontrol/2025/06/03/PMSM_2.html" class="related-card">
+            
+            <div class="related-content">
+              <h4>PMSM电机控制（二）：数学模型的坐标变换</h4>
+              <time>2025年06月03日</time>
+            </div>
+          </a>
+        
+      </div>
+    </div>
+  </footer>
+</article>
+    </main>
+  </div>
+  <!-- 在页面底部包含搜索脚本 -->
+  <script src="/assets/js/search.js"></script>
+</body>
+</html>

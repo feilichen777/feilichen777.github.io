@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>PMSM电机控制（二）：数学模型的坐标变换</title>
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <!-- add support for mathjax by voleking-->
+  
+    <!-- MathJax 3.x 最新版 -->
+<script>
+MathJax = {
+  tex: {
+    inlineMath: [['$', '$'], ['\\(', '\\)']], // 内联公式分隔符
+    displayMath: [['$$', '$$'], ['\\[', '\\]']], // 块级公式分隔符
+    packages: {'[+]': ['physics']} // 可选：添加扩展包:cite[1]
+  },
+  svg: { fontCache: 'global' },
+  loader: { load: ['[tex]/physics'] } // 加载扩展包
+};
+</script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  
+</head>
+<body>
+  <div class="page-container">
+    <header class="site-header">
+  <nav class="navbar">
+    <div class="container">
+      <!-- 左侧导航链接 -->
+      <div class="nav-links">
+        
+          
+          <a href="/" 
+             >
+            首页
+          </a>
+        
+          
+          <a href="/motorcontrol" 
+             >
+            电机控制
+          </a>
+        
+      </div>
+      
+      <!-- 右侧搜索框 -->
+      <div class="search-container">
+        <form id="search-form" class="search-form">
+          <input type="text" id="search-input" placeholder="搜索文章..." aria-label="搜索文章">
+          <button type="submit" aria-label="搜索">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+            </svg>
+          </button>
+        </form>
+        <!-- 搜索结果悬浮层 -->
+        <div id="search-results" class="search-results"></div>
+      </div>
+    </div>
+  </nav>
+</header>
+    <main class="container">
+      <article class="post-article">
+  <header class="post-header">
+    <div class="post-meta">
+      
+      <time datetime="2025-06-03T00:00:00+08:00">
+        2025年06月03日
+      </time>
+      <span class="read-time">
+        
+        4 分钟阅读
+      </span>
+    </div>
+    
+    <h1 class="post-title">PMSM电机控制（二）：数学模型的坐标变换</h1>
+    
+    
+    
+    <div class="post-tags">
+      
+        <span class="tag">PMSM</span>
+      
+        <span class="tag">Clark</span>
+      
+        <span class="tag">Park</span>
+      
+    </div>
+    
+    
+  </header>
+  
+  <div class="post-content">
+    <p>在上一章中，我们介绍了PMSM在自然坐标系下的数学模型。为了简化自然坐标系下三相PMSM的数学模型，采用的坐标变换通常包括静止坐标变换（Clark变换）和同步旋转坐标变换（Park变换）。</p>
+
+<h1 id="一clark变换">一、Clark变换</h1>
+
+<p>由于a-b-c三相静止坐标系的方程相对复杂，变量较多，耦合度较高，所以对其进行解耦和简化。借助一个虚拟的两相静止坐标系，将复杂的abc坐标系经过数学推算等价到该两相坐标系中进行分析和计算。</p>
+
+<p>为简化分析过程，通常在建立α-β静止坐标系时将α轴与a-b-c静止坐标系的a相轴重合，如图所示。</p>
+
+<p><img src="http://localhost:4000/assets/images/PMSM_2_1.png" alt="Clark变换" /></p>
+
+<p>由图可得：</p>
+
+\[\begin{align}
+    f_\alpha &amp;= f_a - f_b\cos(\frac{\pi}{3}) - f_c\cos(\frac{\pi}{3})=f_a - \frac{1}{2}f_b - \frac{1}{2}f_c \\
+    f_\beta &amp;= f_b\cos(\frac{\pi}{6}) - f_c\cos(\frac{\pi}{6})=\frac{\sqrt{3}}{2}f_b - \frac{\sqrt{3}}{2}f_c 
+\end{align}\]
+
+<p>将a-b-c静止坐标系下的各个相的物理量fa，fb，fc分别映射到α-β轴上，得到虚拟物理量fα，fβ，并分别表示时变电压，电流，磁链。</p>
+
+<p>从a-b-c三相静止坐标系变换到α-β静止坐标的变换，称为Clark变换，用T3s/2s表示。</p>
+
+<p>代入$U_a=U_m\cos(\omega t),U_b=U_m\cos(\omega t-\frac{2\pi}{3}),U_c=U_m\cos(\omega t+\frac{2\pi}{3})$可得：</p>
+
+\[\begin{align}
+    U_\alpha&amp;=U_m\cos(\omega t)-\frac{1}{2}U_m\cos(\omega t-\frac{2\pi}{3})-\frac{1}{2}U_m\cos(\omega t+\frac{2\pi}{3})\\
+    &amp;=U_m\cos(\omega t)-\frac{1}{2}U_m(-\frac{1}{2}\cos(\omega t)+\frac{\sqrt{3}}{2}\sin(\omega t))-\frac{1}{2}U_m(-\frac{1}{2}\cos(\omega t)-\frac{\sqrt{3}}{2}\sin(\omega t))\\
+    &amp;=\frac{3}{2}U_m\cos(\omega t)\\
+    U_\beta&amp;=\frac{\sqrt{3}}{2}U_m\cos(\omega t-\frac{2\pi}{3})-\frac{\sqrt{3}}{2}U_m\cos(\omega t+\frac{2\pi}{3})\\
+    &amp;=\frac{\sqrt{3}}{2}U_m(-\frac{1}{2}\cos(\omega t)+\frac{\sqrt{3}}{2}\sin(\omega t))-\frac{\sqrt{3}}{2}U_m(-\frac{1}{2}\cos(\omega t)-\frac{\sqrt{3}}{2}\sin(\omega t))\\
+    &amp;=\frac{3}{2}U_m\sin(\omega t)=\frac{3}{2}U_m\cos(\omega t-\frac{\pi}{2})
+\end{align}\]
+
+<p>由运算结果可知，$U_\alpha$超前$U_\beta$ 90度，两者赋值相等，但为$U_m$的1.5倍。因此，若采用<strong>等幅值变换</strong>，需要在原来的表达式上，乘以2/3。那么此时的坐标变换表达式可以表示为：</p>
+
+\[\left[\begin{matrix}
+    f_\alpha \\ 
+    f_\beta \\
+    f_0
+\end{matrix}\right] = T_{3s/2s} \left[\begin{matrix}
+    f_a \\
+    f_b \\
+    f_c \\
+\end{matrix}\right]\]
+
+<p>其中：</p>
+
+\[T_{3s/2s}=\frac{2}{3}\left[\begin{matrix}
+    1 &amp; -\frac{1}{2} &amp; -\frac{1}{2}\\
+    0 &amp; \frac{\sqrt{3}}{2} &amp; -\frac{\sqrt{3}}{2}\\
+    \frac{1}{2} &amp; \frac{1}{2} &amp; \frac{1}{2}
+\end{matrix}\right] \tag{1}\]
+
+<p>从α-β静止坐标到a-b-c静止坐标系，为$T_{3s/2s}$的逆矩阵，即：</p>
+
+\[T_{2s/3s}=T_{3s/2s}^{-1}=\left[\begin{matrix}
+    1 &amp; 0 &amp; 1 \\
+    -\frac{1}{2} &amp; \frac{\sqrt{3}}{2} &amp; 1 \\
+    -\frac{1}{2} &amp; -\frac{\sqrt{3}}{2} &amp; 1
+\end{matrix}\right] \tag{2}\]
+
+<p>如果采用<strong>等功率变换</strong>，那么式中的系数$\frac{2}{3}$需要改成$\sqrt{\frac{2}{3}}$。$f_0$为零序分量，对于三相对称系统而言，在计算静止坐标系下的分量时，零序分量可以忽略。</p>
+
+<h1 id="二park变换">二、Park变换</h1>
+
+<p>将静止坐标系α-β变换到同步旋转坐标系d-q的坐标变换称为Park变换。</p>
+
+<p>从A轴开始，以wt($\theta_e$)的角速度旋转，这样合成的电压矢量会和dq0坐标轴同步旋转，旋转矢量和旋转的dq0坐标系处于一个相对静止的状态。令d轴的初始位置与A轴重合，如图所示。</p>
+
+<p><img src="http://localhost:4000/assets/images/PMSM_2_2.png" alt="Park变换" /></p>
+
+<p>由图可得：</p>
+
+\[\begin{align}
+    f_d &amp;= f_\alpha \cos(\theta_e) +f_\beta \sin(\theta_e)\\
+    f_q &amp;= -f_\alpha \sin(\theta_e) + f_\beta \cos(\theta_e)
+\end{align}\]
+
+<p>则Park变换矩阵$T_{2s/2r}$可以表示为：</p>
+
+\[T_{2s/2r}=\left[\begin{matrix}
+    \cos(\theta_e) &amp; \sin(\theta_e) \\
+    -\sin(\theta_e) &amp; \cos(\theta_e)
+\end{matrix}\right] \tag{3}\]
+
+<p>从旋转坐标系变换到静止坐标系，为$T_{2s/2r}$的逆矩阵，即：</p>
+
+\[T_{2r/2s}=T_{2s/2r}^{-1}=\left[\begin{matrix}
+    \cos(\theta_e) &amp; -\sin(\theta_e) \\
+    \sin(\theta_e) &amp; \cos(\theta_e)
+\end{matrix}\right] \tag{4}\]
+
+<h2 id="三α-β坐标系下的数学模型">三、α-β坐标系下的数学模型</h2>
+
+<p>在上一章节中，我们推导出自然坐标系下的电机电压方程为：</p>
+
+\[\left[ \begin{matrix}
+   u_a \\
+   u_b \\
+   u_c 
+  \end{matrix}
+  \right] = \left[
+ \begin{matrix}
+   R_s &amp; 0 &amp; 0\\
+   0 &amp; R_s &amp; 0\\
+   0 &amp; 0 &amp; R_s
+  \end{matrix}
+  \right] \left[
+ \begin{matrix}
+   i_a \\
+   i_b \\
+   i_c
+  \end{matrix}
+  \right]+\frac{d}{dt} \left[
+    \begin{matrix}
+        \psi_a \\
+        \psi_b \\
+        \psi_c
+    \end{matrix}
+  \right] \tag{5}\]
+
+<p>磁链方程为：</p>
+
+\[\left[\begin{matrix}
+    \psi_a \\
+    \psi_b \\
+    \psi_c
+\end{matrix}\right]=
+\left[\begin{matrix}
+    L_{aa} &amp; M_{ab} &amp; M_{ac} \\
+    M_{ba} &amp; L_{bb} &amp; M_{bc} \\
+    M_{ca} &amp; M_{cb} &amp; L_{cc}
+\end{matrix}\right]
+\left[\begin{matrix}
+    i_{a} \\
+    i_{b} \\
+    i_{c}
+\end{matrix}\right]+\psi_f
+\left[\begin{matrix}
+    \cos(\theta_e) \\
+    \cos(\theta_e-2\pi/3) \\
+    \cos(\theta_e+2\pi/3)
+\end{matrix}\right] \tag{6}\]
+
+<p>由于：</p>
+
+\[\left[ \begin{matrix}
+   u_a \\
+   u_b \\
+   u_c 
+  \end{matrix}
+  \right]=T_{2s/3s}
+  \left[\begin{matrix}
+    u_\alpha \\
+    u_\beta
+  \end{matrix}\right],
+\left[ \begin{matrix}
+   i_a \\
+   i_b \\
+   i_c 
+  \end{matrix}
+  \right]=T_{2s/3s}
+  \left[\begin{matrix}
+    i_\alpha \\
+    i_\beta
+  \end{matrix}\right]\]
+
+<p>代入式（5）可得</p>
+
+\[T_{2s/3s}
+\left[\begin{matrix}
+    u_\alpha \\
+    u_\beta
+  \end{matrix}\right] =
+\left[\begin{matrix}
+   R_s &amp; 0 &amp; 0\\
+   0 &amp; R_s &amp; 0\\
+   0 &amp; 0 &amp; R_s
+  \end{matrix}\right]
+T_{2s/3s}
+\left[\begin{matrix}
+    i_\alpha \\
+    i_\beta
+  \end{matrix}\right]+\frac{d}{dt}
+  (L_s T_{2s/3s}\left[\begin{matrix}
+    i_\alpha \\
+    i_\beta
+  \end{matrix}\right]+\psi_f
+\left[\begin{matrix}
+    \cos(\theta_e) \\
+    \cos(\theta_e-2\pi/3) \\
+    \cos(\theta_e+2\pi/3)
+\end{matrix}\right]) \tag{7}\]
+
+<p>对式（7）两侧同乘以$T_{3s/2s}$后，可得：</p>
+
+\[\left[\begin{matrix}
+    u_\alpha \\
+    u_\beta
+  \end{matrix}\right] =T_{3s/2s}
+\left[\begin{matrix}
+   R_s &amp; 0 &amp; 0\\
+   0 &amp; R_s &amp; 0\\
+   0 &amp; 0 &amp; R_s
+  \end{matrix}\right]
+T_{2s/3s}
+\left[\begin{matrix}
+    i_\alpha \\
+    i_\beta
+  \end{matrix}\right]+\frac{d}{dt}
+  (T_{3s/2s} L_s T_{2s/3s}\left[\begin{matrix}
+    i_\alpha \\
+    i_\beta
+  \end{matrix}\right]+\psi_f T_{3s/2s}
+\left[\begin{matrix}
+    \cos(\theta_e) \\
+    \cos(\theta_e-2\pi/3) \\
+    \cos(\theta_e+2\pi/3)
+\end{matrix}\right]) \tag{8}\]
+
+<p>对式（8）整理得：</p>
+
+\[T_{3s/2s}
+\left[\begin{matrix}
+   R_s &amp; 0 &amp; 0\\
+   0 &amp; R_s &amp; 0\\
+   0 &amp; 0 &amp; R_s
+  \end{matrix}\right]
+T_{2s/3s} = 
+\left[\begin{matrix}
+    R_s &amp; 0 \\
+    0 &amp; R_s
+\end{matrix}\right]\]
+
+\[\begin{align}
+    T_{3s/2s} L_s T_{2s/3s} &amp;= \frac{2}{3}\left[\begin{matrix}
+    1 &amp; -\frac{1}{2} &amp; -\frac{1}{2}\\
+    0 &amp; \frac{\sqrt{3}}{2} &amp; -\frac{\sqrt{3}}{2}\\
+\end{matrix}\right]
+\left[\begin{matrix}
+    L_{aa} &amp; M_{ab} &amp; M_{ac} \\
+    M_{ba} &amp; L_{bb} &amp; M_{bc} \\
+    M_{ca} &amp; M_{cb} &amp; L_{cc}
+\end{matrix}\right]
+\left[\begin{matrix}
+    1 &amp; 0  \\
+    -\frac{1}{2} &amp; \frac{\sqrt{3}}{2}  \\
+    -\frac{1}{2} &amp; -\frac{\sqrt{3}}{2} 
+\end{matrix}\right]\\
+    &amp;= \frac{2}{3}
+    \left[\begin{matrix}
+        L_{aa}+\frac{1}{4}L_{bb}+\frac{1}{4}L_{cc}-M_{ba}-M_{ca}+\frac{1}{2}M_{bc} &amp; \frac{\sqrt{3}}{4}(2M_{ab}-2M_{ac}+L_{bb}+L_{cc})\\
+        \frac{\sqrt{3}}{4}(2M_{ba}-2M_{ca}-L_{bb}+L_{cc}) &amp; \frac{3}{4}(L_{bb}-2M_{bc}+L_{cc})
+    \end{matrix}\right]\\
+    &amp;= \left[\begin{matrix}
+        L_{ls}+\frac{3}{2}L_{a}+\frac{3}{2}L_{b}\cos(2\theta_e) &amp; \frac{3}{2}L_{b}\sin(2\theta_e)\\
+        \frac{3}{2}L_b\sin(2\theta_e) &amp; L_{ls}+\frac{3}{2}L_{a}-\frac{3}{2}L_{b}\cos(2\theta_e)
+    \end{matrix}\right]
+\end{align}\]
+
+\[T_{3s/2s}
+\left[\begin{matrix}
+    \cos(\theta_e) \\
+    \cos(\theta_e-2\pi/3) \\
+    \cos(\theta_e+2\pi/3)
+\end{matrix}\right] = 
+\left[\begin{matrix}
+    \cos(\theta_e) \\
+    \sin(\theta_e)
+\end{matrix}\right]\]
+
+<p>令
+\(L_{\alpha\beta}=\left[\begin{matrix}
+        L_{ls}+\frac{3}{2}L_{a}+\frac{3}{2}L_{b}\cos(2\theta_e) &amp; \frac{3}{2}L_{b}\sin(2\theta_e)\\
+        \frac{3}{2}L_b\sin(2\theta_e) &amp; L_{ls}+\frac{3}{2}L_{a}-\frac{3}{2}L_{b}\cos(2\theta_e)
+    \end{matrix}\right]\)</p>
+
+<p>将上述化简，代入式（8）后得：</p>
+
+\[\begin{align}
+   \left[\begin{matrix}
+    u_\alpha \\
+    u_\beta
+  \end{matrix}\right] &amp;=
+\left[\begin{matrix}
+   R_s &amp; 0 \\
+   0 &amp; R_s 
+  \end{matrix}\right]
+\left[\begin{matrix}
+    i_\alpha \\
+    i_\beta
+  \end{matrix}\right]+\frac{d}{dt}
+  (\left[\begin{matrix}
+    \psi_\alpha \\
+    \psi_\beta
+  \end{matrix}\right]) \\
+
+  &amp;=
+\left[\begin{matrix}
+   R_s &amp; 0 \\
+   0 &amp; R_s 
+  \end{matrix}\right]
+\left[\begin{matrix}
+    i_\alpha \\
+    i_\beta
+  \end{matrix}\right]+\frac{d}{dt}
+  (L_{\alpha\beta}
+    \left[\begin{matrix}
+    i_\alpha \\
+    i_\beta
+  \end{matrix}\right]+\psi_f
+\left[\begin{matrix}
+    \cos(\theta_e) \\
+    \sin(\theta_e) 
+\end{matrix}\right]) 
+\end{align}
+ \tag{9}\]
+
+<h2 id="四dq坐标系下的数学模型">四、dq坐标系下的数学模型</h2>
+
+<p>由于：</p>
+
+\[\left[\begin{matrix}
+    u_\alpha\\
+    u_\beta
+\end{matrix}\right] = T_{2r/2s}
+\left[\begin{matrix}
+    u_d \\
+    u_q
+\end{matrix}\right],
+\left[\begin{matrix}
+    i_\alpha\\
+    i_\beta
+\end{matrix}\right] = T_{2r/2s}
+\left[\begin{matrix}
+    i_d \\
+    i_q
+\end{matrix}\right]\]
+
+<p>将上述公式代入式（9）可得</p>
+
+\[\begin{align}
+    \left[\begin{matrix}
+    u_d \\
+    u_q
+\end{matrix}\right] &amp;=
+T_{2s/2r}
+\left[\begin{matrix}
+   R_s &amp; 0 \\
+   0 &amp; R_s 
+  \end{matrix}\right]
+T_{2r/2s}
+\left[\begin{matrix}
+    i_d \\
+    i_q
+\end{matrix}\right] +
+T_{2s/2r}
+\frac{d}{dt}
+  (T_{2r/2s}
+  \left[\begin{matrix}
+    \psi_d \\
+    \psi_q
+  \end{matrix}\right])\\
+  &amp;=
+  T_{2s/2r}
+\left[\begin{matrix}
+   R_s &amp; 0 \\
+   0 &amp; R_s 
+  \end{matrix}\right]
+T_{2r/2s}
+\left[\begin{matrix}
+    i_d \\
+    i_q
+\end{matrix}\right] +
+\frac{d}{dt}
+\left[\begin{matrix}
+    \psi_d \\
+    \psi_q
+  \end{matrix}\right]-
+  T_{2r/2s}
+  \left[\begin{matrix}
+    \psi_d \\
+    \psi_q
+  \end{matrix}\right]
+  \frac{d}{dt}(T_{2s/2r})
+\end{align} \tag{10}\]
+
+<p>注：由于Park变换是关于角度的函数，需要进行复合求导，即：
+\(A\frac{dB}{dt}=\frac{dAB}{dt}-B\frac{dA}{dt}\)</p>
+
+<p>对式（10）整理可得：</p>
+
+\[\begin{align}
+    \left[\begin{matrix}
+    \psi_d\\
+    \psi_q
+\end{matrix}\right]&amp;=T_{2s/2r}
+\left[\begin{matrix}
+    \psi_\alpha\\
+    \psi_\beta
+\end{matrix}\right]\\
+&amp;=T_{2s/2r}
+\left[\begin{matrix}
+        L_{ls}+\frac{3}{2}L_{a}+\frac{3}{2}L_{b}\cos(2\theta_e) &amp; \frac{3}{2}L_{b}\sin(2\theta_e)\\
+        \frac{3}{2}L_b\sin(2\theta_e) &amp; L_{ls}+\frac{3}{2}L_{a}-\frac{3}{2}L_{b}\cos(2\theta_e)
+    \end{matrix}\right]
+    T_{2r/2s}
+    \left[\begin{matrix}
+    i_d\\
+    i_q
+\end{matrix}\right] +
+\psi_f
+T_{2s/2r}
+\left[\begin{matrix}
+    \cos(\theta_e) \\
+    \sin(\theta_e) 
+\end{matrix}\right]
+\end{align}\]
+
+\[T_{2s/2r}
+\left[\begin{matrix}
+        L_{ls}+\frac{3}{2}L_{a}+\frac{3}{2}L_{b}\cos(2\theta_e) &amp; \frac{3}{2}L_{b}\sin(2\theta_e)\\
+        \frac{3}{2}L_b\sin(2\theta_e) &amp; L_{ls}+\frac{3}{2}L_{a}-\frac{3}{2}L_{b}\cos(2\theta_e)
+    \end{matrix}\right]
+    T_{2r/2s} =
+\left[\begin{matrix}
+    L_{ls}+\frac{3}{2}L_a+\frac{3}{2}L_b &amp; 0 \\
+    0 &amp; L_{ls}+\frac{3}{2}L_a-\frac{3}{2}L_b
+\end{matrix}\right]\]
+
+\[T_{2s/2r}
+\left[\begin{matrix}
+    \cos(\theta_e) \\
+    \sin(\theta_e) 
+\end{matrix}\right] =
+\left[\begin{matrix}
+    1 \\
+    0
+\end{matrix}\right]\]
+
+\[T_{2r/2s}\frac{d}{dt}(T_{2s/2r})=\omega_e
+  \left[\begin{matrix}
+    -\sin(\theta_e) &amp; \cos(\theta_e)\\
+    -\cos(\theta_e) &amp; -\sin(\theta_e)
+  \end{matrix}\right]
+  \left[\begin{matrix}
+    \cos(\theta_e) &amp; -\sin(\theta_e)\\
+    \sin(\theta_e) &amp; \cos(\theta_e)
+  \end{matrix}\right] =\omega_e
+  \left[\begin{matrix}
+    0 &amp; 1\\
+    -1 &amp; 0
+  \end{matrix}\right]\]
+
+<p>令:</p>
+
+\[\begin{align}
+    L_{dq}&amp;=\left[\begin{matrix}
+        L_{ls}+\frac{3}{2}L_a+\frac{3}{2}L_b &amp; 0 \\
+        0 &amp; L_{ls}+\frac{3}{2}L_a-\frac{3}{2}L_b
+        \end{matrix}\right]\\
+        &amp;=\left[\begin{matrix}
+        L_d &amp; 0 \\
+        0 &amp; L_q
+        \end{matrix}\right]
+\end{align}\]
+
+<p>则$\psi_d,\psi_q$可以表示为：
+\(\left[\begin{matrix}
+    \psi_d\\
+    \psi_q
+\end{matrix}\right]=L_{dq}
+\left[\begin{matrix}
+    i_d\\
+    i_q
+\end{matrix}\right] +
+\left[\begin{matrix}
+    \psi_f\\
+    0
+\end{matrix}\right]\)</p>
+
+<p>将上述化简代入式（10）后得到：</p>
+
+\[\begin{align}
+    \left[\begin{matrix}
+    u_d \\
+    u_q
+\end{matrix}\right] &amp;=
+\left[\begin{matrix}
+   R_s &amp; 0 \\
+   0 &amp; R_s 
+\end{matrix}\right]
+\left[\begin{matrix}
+    i_d\\
+    i_q
+\end{matrix}\right] + L_{dq}\frac{d}{dt}
+\left[\begin{matrix}
+    i_d\\
+    i_q
+\end{matrix}\right]
+-\omega_e
+  \left[\begin{matrix}
+    0 &amp; 1\\
+    -1 &amp; 0
+  \end{matrix}\right]
+(L_{dq}
+\left[\begin{matrix}
+    i_d\\
+    i_q
+\end{matrix}\right]+
+\left[\begin{matrix}
+    \psi_f\\
+    0
+\end{matrix}\right])\\
+&amp;=
+\left[\begin{matrix}
+    R_s &amp; -\omega_e L_q \\
+    \omega_e L_d &amp; Rs
+\end{matrix}\right]
+\left[\begin{matrix}
+    i_d\\
+    i_q
+\end{matrix}\right]+
+\left[\begin{matrix}
+    L_d &amp; 0 \\
+     0 &amp; L_q
+\end{matrix}\right]\frac{d}{dt}
+\left[\begin{matrix}
+    i_d\\
+    i_q
+\end{matrix}\right]+
+\left[\begin{matrix}
+    0\\
+    \omega_e \psi_f
+\end{matrix}\right]
+\end{align} \tag{11}\]
+
+<p>可以看出，三相PMSM的数学模型实现了完全的解耦。
+此时电磁转矩方程可写为：</p>
+
+\[T_e=\frac{3}{2}p_ni_q[i_d(L_d-L_q)+\psi_f]\]
+
+  </div>
+  
+  <footer class="post-footer">
+    <div class="post-author">
+      <div class="author-info">
+        <img src="/assets/images/avatar.jpg" alt="Feili" class="author-avatar">
+        <div>
+          <h4>Feili</h4>
+          <p>努力学习，天天向上</p>
+        </div>
+      </div>
+      <div class="author-meta">
+        <span>发布于 2025年06月03日</span>
+        <span>最后更新于 2025年06月03日</span>
+      </div>
+    </div>
+    
+    <div class="post-navigation">
+      
+        <a href="/motorcontrol/2025/05/30/PMSM_1.html" class="prev-post">
+          <span>上一篇</span>
+          <h4>PMSM电机控制（一）：永磁同步电机的基本模型</h4>
+        </a>
+      
+      
+      
+    </div>
+    
+    <div class="related-posts">
+      <h3>相关文章</h3>
+      <div class="related-grid">
+        
+        
+          <a href="/motorcontrol/2025/05/30/PMSM_1.html" class="related-card">
+            
+            <div class="related-content">
+              <h4>PMSM电机控制（一）：永磁同步电机的基本模型</h4>
+              <time>2025年05月30日</time>
+            </div>
+          </a>
+        
+      </div>
+    </div>
+  </footer>
+</article>
+    </main>
+  </div>
+  <!-- 在页面底部包含搜索脚本 -->
+  <script src="/assets/js/search.js"></script>
+</body>
+</html>
