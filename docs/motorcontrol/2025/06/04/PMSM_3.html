@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>PMSM电机控制（三）：空间矢量调制</title>
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <!-- add support for mathjax by voleking-->
+  
+    <!-- MathJax 3.x 最新版 -->
+<script>
+MathJax = {
+  tex: {
+    inlineMath: [['$', '$'], ['\\(', '\\)']], // 内联公式分隔符
+    displayMath: [['$$', '$$'], ['\\[', '\\]']], // 块级公式分隔符
+    packages: {'[+]': ['physics']} // 可选：添加扩展包:cite[1]
+  },
+  svg: { fontCache: 'global' },
+  loader: { load: ['[tex]/physics'] } // 加载扩展包
+};
+</script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  
+</head>
+<body>
+  <div class="page-container">
+    <header class="site-header">
+  <nav class="navbar">
+    <div class="container">
+      <!-- 左侧导航链接 -->
+      <div class="nav-links">
+        
+          
+          <a href="/" 
+             >
+            首页
+          </a>
+        
+          
+          <a href="/motorcontrol" 
+             >
+            电机控制
+          </a>
+        
+      </div>
+      
+      <!-- 右侧搜索框 -->
+      <div class="search-container">
+        <form id="search-form" class="search-form">
+          <input type="text" id="search-input" placeholder="搜索文章..." aria-label="搜索文章">
+          <button type="submit" aria-label="搜索">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+            </svg>
+          </button>
+        </form>
+        <!-- 搜索结果悬浮层 -->
+        <div id="search-results" class="search-results"></div>
+      </div>
+    </div>
+  </nav>
+</header>
+    <main class="container">
+      <article class="post-article">
+  <header class="post-header">
+    <div class="post-meta">
+      
+      <time datetime="2025-06-04T00:00:00+08:00">
+        2025年06月04日
+      </time>
+      <span class="read-time">
+        
+        3 分钟阅读
+      </span>
+    </div>
+    
+    <h1 class="post-title">PMSM电机控制（三）：空间矢量调制</h1>
+    
+    
+    
+    <div class="post-tags">
+      
+        <span class="tag">PMSM</span>
+      
+        <span class="tag">SVPWM</span>
+      
+    </div>
+    
+    
+  </header>
+  
+  <div class="post-content">
+    <h2 id="一概述">一、概述</h2>
+
+<p>SVPWM是由三相功率逆变器的六个功率开关元件组成的特定开关模式产生的脉宽调制波，能够使输出电流波形尽可能接近于理想的正弦波形。</p>
+
+<p>如图是一个经典的三相逆变电路。在算法模拟中，逆变器是虚拟的模型。在真实工况中，该逆变器是真实的元器件。通过控制这六个开关的导通和切断，配合左边的直流电压源，该逆变器可以在右侧电机定子相上产生所需要的正弦电压。这六个开关的开关状态是离散的，所以该算法很适合离散的数字系统。</p>
+
+<h2 id="二原理介绍">二、原理介绍</h2>
+
+<h3 id="21-空间矢量">2.1 空间矢量</h3>
+
+<p>我们可以在三相绕组ABC的施加如下的相电压：</p>
+
+\[\begin{align}
+    u_a&amp;=U_mcos(\omega_e t)\\
+    u_b&amp;=U_mcos(\omega_e t - \frac{2}{3}\pi)\\
+    u_c&amp;=U_mcos(\omega_e t + \frac{2}{3}\pi)
+\end{align}\]
+
+<p>他们的合成电压矢量可以表示为：</p>
+
+\[\begin{align}
+    U_{out} &amp;= u_a + u_b e^{j\frac{2}{3}\pi}+u_c e^{-j\frac{2}{3}\pi}\\
+    &amp;= U_mcos(\omega_e t) + U_mcos(\omega_e t - \frac{2}{3}\pi)e^{j\frac{2}{3}\pi} + U_mcos(\omega_e t + \frac{2}{3}\pi)e^{-j\frac{2}{3}\pi}\\
+    &amp;= \frac{3}{2}U_m e^{j\omega_e t}
+\end{align}\]
+
+<p>式中的$e^{j\frac{2}{3}\pi}$表示ABC相绕组在空间上的分布差120°。可以看出合成后的空间矢量幅值为$\frac{3}{2}U_m$，因此为了符合<strong>等幅值变换</strong>，会在前面乘以个系数$\frac{2}{3}$。这个系数可以在Clark变换中加入。</p>
+
+<p>如下图所示，定义开关量$s_a,s_b,s_c,s_a’,s_b’,s_c’$表示 6 个功率开关器件的开关状态。</p>
+
+<p><img src="http://localhost:4000/assets/images/PMSM_3_1.png" alt="三相逆变桥臂" /></p>
+
+<p>当$s_a,s_b,s_c$为1时，表示逆变电路的上桥臂导通，下桥臂关断（$s_a’,s_b’,s_c’$为0）；反之，当$s_a,s_b,s_c$为0时，表示逆变电路的上桥臂关断，下桥臂导通。由于同一桥臂上下开关器件不能同时导通，则上述的逆变器三路逆变桥的开关组态一共有8种。对于不同的开关状态组合$s_{abc}$，可以得到 8个基本电压空间矢量，这样逆变器的8种开关模式就对应8个电压空间矢量。</p>
+
+<p>SVPWM都假设电机拥有平衡的三相绕组，也就是三相的相电阻相等。当开关状态为：</p>
+
+\[S_a=1, S_b=0, S_c=0\]
+
+<p>这三个开关函数可以用一个向量$(1 0 0)$来表示。此时可以根据串联分压定理得到：</p>
+
+\[\begin{align}
+U_{AN} &amp;= 2U_{NB} = 2U_{NC}\\
+U_{dc} &amp;= U_{AN}+U_{NB}
+\end{align}\]
+
+<p>由此，我们可以得出三个相电压为：</p>
+
+\[\begin{align}
+    U_{AN} &amp;= \frac{2}{3}U_{dc}\\
+    U_{BN} &amp;=U_{CN} = -\frac{1}{3}U_{dc}
+\end{align}\]
+
+<p>该向量可以表示为：</p>
+
+\[U_{out}=\frac{2}{3}(\frac{2}{3}U_{dc}-\frac{1}{3}U_{dc}e^{j\frac{2}{3}\pi}-\frac{1}{3}U_{dc}e^{-j\frac{2}{3}\pi} )= \frac{2}{3}U_{dc}\]
+
+<p>其余七组向量也可以计算得出，如下表：</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>$s_a$</th>
+      <th>$s_b$</th>
+      <th>$s_c$</th>
+      <th>$U_{AN}$</th>
+      <th>$U_{BN}$</th>
+      <th>$U_{CN}$</th>
+      <th>Vector</th>
+      <th>$U_{out}$</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>$U_0$</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>$\frac{2}{3}U_{dc}$</td>
+      <td>$-\frac{1}{3}U_{dc}$</td>
+      <td>$-\frac{1}{3}U_{dc}$</td>
+      <td>$U_4$</td>
+      <td>$\frac{2}{3}U_{dc}$</td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>$\frac{1}{3}U_{dc}$</td>
+      <td>$\frac{1}{3}U_{dc}$</td>
+      <td>$-\frac{2}{3}U_{dc}$</td>
+      <td>$U_6$</td>
+      <td>$\frac{2}{3}U_{dc}e^{j\frac{1}{3}\pi}$</td>
+    </tr>
+    <tr>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>$-\frac{1}{3}U_{dc}$</td>
+      <td>$\frac{2}{3}U_{dc}$</td>
+      <td>$-\frac{1}{3}U_{dc}$</td>
+      <td>$U_2$</td>
+      <td>$\frac{2}{3}U_{dc}e^{j\frac{2}{3}\pi}$</td>
+    </tr>
+    <tr>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>$-\frac{2}{3}U_{dc}$</td>
+      <td>$\frac{1}{3}U_{dc}$</td>
+      <td>$\frac{1}{3}U_{dc}$</td>
+      <td>$U_3$</td>
+      <td>$-\frac{2}{3}U_{dc}$</td>
+    </tr>
+    <tr>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>$-\frac{1}{3}U_{dc}$</td>
+      <td>$-\frac{1}{3}U_{dc}$</td>
+      <td>$\frac{2}{3}U_{dc}$</td>
+      <td>$U_1$</td>
+      <td>$\frac{2}{3}U_{dc}e^{-j\frac{2}{3}\pi}$</td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>$\frac{1}{3}U_{dc}$</td>
+      <td>$-\frac{2}{3}U_{dc}$</td>
+      <td>$\frac{1}{3}U_{dc}$</td>
+      <td>$U_5$</td>
+      <td>$\frac{2}{3}U_{dc}e^{-j\frac{1}{3}\pi}$</td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>$U_7$</td>
+      <td>0</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>在8种组合电压空间矢量中，包括6个非零矢量以及2各零矢量。它们将复平面分成了六个扇区，如下图所示。
+<img src="http://localhost:4000/assets/images/PMSM_3_2.png" alt="扇区图" /></p>
+
+<h3 id="22-合成原理">2.2 合成原理</h3>
+
+<p>SVPWM算法的理论基础是平均值等效原理，即在一个开关周期$T_s$内通过对基本电压矢量加以组合，使其平均值与给定电压矢量相等。以扇区I为例，如下图所示。
+<img src="http://localhost:4000/assets/images/PMSM_3_3.png" alt="电压矢量" />
+根据平衡等效原则，可以得到：</p>
+
+\[\begin{align}
+    T_s U_{out}&amp;=T_4U_4+T_6U_6+T_0U_0(或T_7U_7)\\
+    T_s &amp;= T_4+T_6+T_0
+\end{align}\]
+
+<p>再进一步，我们有：</p>
+
+\[\begin{align}
+    &amp;U_{out}=\frac{T_4}{T_s}U_4+\frac{T_6}{T_s}U_6+\frac{T_0}{T_s}U_0\\
+    &amp;U_{first}=\frac{T_4}{T_s}U_4\\
+    &amp;U_{second}=\frac{T_6}{T_s}U_6
+\end{align}\]
+
+<p>观察图中，我们不难得出：</p>
+
+\[\frac{|U_{out}|}{\sin(\frac{2}{3}\pi)}=\frac{|U_{first}|}{\sin(\frac{\pi}{3}-\theta)}=\frac{|U_{second}|}{\sin(\theta)}\]
+
+<p>将
+\(|U_4|=\frac{2}{3}U_{dc},|U_6|=\frac{2}{3}U_{dc},U_{out}=U_m\)代入计算得出：</p>
+
+\[\begin{align}
+    &amp;T_4 = \sqrt{3}\frac{U_m}{U_{dc}}T_s\sin(\frac{\pi}{3}-\theta)\\
+    &amp;T_6 = \sqrt{3}\frac{U_m}{U_{dc}}T_s\sin(\theta)\\
+    &amp;T_0 = \frac{1}{2}(T_s-T_4-T_6)
+\end{align}\]
+
+<h2 id="三算法实现">三、算法实现</h2>
+
+<h3 id="31-扇区判断">3.1 扇区判断</h3>
+
+<p>SVPWM算法首先需要知道要合成的参考电压向量$U_{out}$落在了哪个扇区。然后算法就可以根据该扇区相邻的两个非零向量和两个零向量来合成该参考电压向量。</p>
+
+<p>我们可以将$U_{out}$分解在电机定子的$\alpha-\beta$坐标系上（Clark变换）。对应在两个坐标轴上的电压量是$U_\alpha$和$U_\beta$。
+令：</p>
+
+\[\begin{align}
+    &amp;U_{ref1} = U_{\beta}\\
+    &amp;U_{ref2} = -\frac{1}{2}U_{\beta}+\frac{\sqrt{3}}{2}U_{\alpha}\\
+    &amp;U_{ref3} = -\frac{1}{2}U_{\beta}-\frac{\sqrt{3}}{2}U_{\alpha}
+\end{align}\]
+
+<p>如图所示，当$U_{ref1}&gt;0,U_{ref2}&gt;0,U_{ref3}&lt;0$时，处在扇区I。
+<img src="http://localhost:4000/assets/images/PMSM_3_4.png" alt="扇区判断" /></p>
+
+<p>同理，可得如下表：</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>$U_{ref1}$</th>
+      <th>$U_{ref2}$</th>
+      <th>$U_{ref3}$</th>
+      <th>扇区</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>$&gt;0$</td>
+      <td>$&gt;0$</td>
+      <td>$&gt;0$</td>
+      <td>不存在</td>
+    </tr>
+    <tr>
+      <td>$&gt;0$</td>
+      <td>$&gt;0$</td>
+      <td>$&lt;0$</td>
+      <td>I</td>
+    </tr>
+    <tr>
+      <td>$&gt;0$</td>
+      <td>$&lt;0$</td>
+      <td>$&gt;0$</td>
+      <td>III</td>
+    </tr>
+    <tr>
+      <td>$&gt;0$</td>
+      <td>$&lt;0$</td>
+      <td>$&lt;0$</td>
+      <td>II</td>
+    </tr>
+    <tr>
+      <td>$&lt;0$</td>
+      <td>$&gt;0$</td>
+      <td>$&gt;0$</td>
+      <td>V</td>
+    </tr>
+    <tr>
+      <td>$&lt;0$</td>
+      <td>$&gt;0$</td>
+      <td>$&lt;0$</td>
+      <td>VI</td>
+    </tr>
+    <tr>
+      <td>$&lt;0$</td>
+      <td>$&lt;0$</td>
+      <td>$&gt;0$</td>
+      <td>IV</td>
+    </tr>
+    <tr>
+      <td>$&lt;0$</td>
+      <td>$&lt;0$</td>
+      <td>$&lt;0$</td>
+      <td>不存在</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="32-矢量作用时间计算">3.2 矢量作用时间计算</h3>
+
+<p>仍然假设$U_{out}$落在第一扇区，可求得：</p>
+
+\[\begin{align}
+    &amp;U_{\alpha}=\frac{T_4}{T_s}|U_4|+\frac{T_6}{T_s}|U_6|\cos(\frac{\pi}{3})\\
+    &amp;U_{\beta}=\frac{T_6}{T_s}|U_6|\sin(\frac{\pi}{3})
+\end{align}\]
+
+<p>通过简单计算后可得到：</p>
+
+\[\begin{align}
+    &amp;T_4=\frac{\sqrt{3}T_s}{2U_{dc}}(\sqrt{3}U_\alpha-U_\beta)\\
+    &amp;T_6=\frac{\sqrt{3}T_s}{U_{dc}}(U_\beta)
+\end{align}\]
+
+<p>同理可得其他扇区的作用时间为：</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>扇区</th>
+      <th>$T_{first}$</th>
+      <th>$T_{second}$</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>I</td>
+      <td>$T_4=\frac{\sqrt{3}T_s}{U_{dc}}(\frac{\sqrt{3}}{2}U_\alpha-\frac{1}{2}U_\beta)$</td>
+      <td>$T_6=\frac{\sqrt{3}T_s}{U_{dc}}(U_\beta)$</td>
+    </tr>
+    <tr>
+      <td>II</td>
+      <td>$T_2=\frac{\sqrt{3}T_s}{U_{dc}}(-\frac{\sqrt{3}}{2}U_\alpha+\frac{1}{2}U_\beta)$</td>
+      <td>$T_6=\frac{\sqrt{3}T_s}{U_{dc}}(\frac{\sqrt{3}}{2}U_\alpha+\frac{1}{2}U_\beta)$</td>
+    </tr>
+    <tr>
+      <td>III</td>
+      <td>$T_2=\frac{\sqrt{3}T_s}{U_{dc}}(U_\beta)$</td>
+      <td>$T_3=\frac{\sqrt{3}T_s}{U_{dc}}(-\frac{\sqrt{3}}{2}U_\alpha-\frac{1}{2}U_\beta)$</td>
+    </tr>
+    <tr>
+      <td>IV</td>
+      <td>$T_1=\frac{\sqrt{3}T_s}{U_{dc}}(-U_\beta)$</td>
+      <td>$T_3=\frac{\sqrt{3}T_s}{U_{dc}}(-\frac{\sqrt{3}}{2}U_\alpha+\frac{1}{2}U_\beta)$</td>
+    </tr>
+    <tr>
+      <td>V</td>
+      <td>$T_1=\frac{\sqrt{3}T_s}{U_{dc}}(-\frac{\sqrt{3}}{2}U_\alpha-\frac{1}{2}U_\beta)$</td>
+      <td>$T_5=\frac{\sqrt{3}T_s}{U_{dc}}(\frac{\sqrt{3}}{2}U_\alpha-\frac{1}{2}U_\beta)$</td>
+    </tr>
+    <tr>
+      <td>VI</td>
+      <td>$T_4=\frac{\sqrt{3}T_s}{U_{dc}}(\frac{\sqrt{3}}{2}U_\alpha+\frac{1}{2}U_\beta)$</td>
+      <td>$T_5=\frac{\sqrt{3}T_s}{U_{dc}}(-U_\beta)$</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>$T_{first}$代表每个扇区第一个非零矢量的持续时间，$T_{second}$代表每个扇区第二个非零矢量的持续时间。</p>
+
+<p>对于电机控制来说，常见的，我们使用上下计数的三角形载波（Up-Down-Count）来确定PWM的切换点。
+我们首先定义三个变量：</p>
+
+\[\begin{align}
+    &amp;T_a = \frac{T_s-T_{first}-T_{second}}{4}\\
+    &amp;T_b = T_a+\frac{T_{first}}{2}\\
+    &amp;T_c = T_b+\frac{T_{second}}{2}
+\end{align}\]
+
+<p>由图可知，这三个变量代表了abc三相开关切换的时间点。
+<img src="http://localhost:4000/assets/images/PMSM_3_5.png" alt="切换点" />
+对于不同的扇区，切换的时间点$T_{cm}$可以表示为：</p>
+
+<table>
+  <tbody>
+    <tr>
+      <td>扇区</td>
+      <td>I</td>
+      <td>II</td>
+      <td>III</td>
+      <td>IV</td>
+      <td>V</td>
+      <td>VI</td>
+    </tr>
+    <tr>
+      <td>$T_{cm1}$</td>
+      <td>$T_a$</td>
+      <td>$T_b$</td>
+      <td>$T_c$</td>
+      <td>$T_c$</td>
+      <td>$T_b$</td>
+      <td>$T_a$</td>
+    </tr>
+    <tr>
+      <td>$T_{cm2}$</td>
+      <td>$T_b$</td>
+      <td>$T_a$</td>
+      <td>$T_a$</td>
+      <td>$T_b$</td>
+      <td>$T_c$</td>
+      <td>$T_c$</td>
+    </tr>
+    <tr>
+      <td>$T_{cm3}$</td>
+      <td>$T_c$</td>
+      <td>$T_c$</td>
+      <td>$T_b$</td>
+      <td>$T_a$</td>
+      <td>$T_a$</td>
+      <td>$T_b$</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 id="四优化计算">四、优化计算</h2>
+
+<p>通过上述的推导，我们可以发现SVPWM的计算过程比较复杂。因此，我们可以通过优化其计算过程，减少对控制芯片算力的需求。
+通过对下表的计算可以看出（为简化计算，忽略部分相同系数）,扇区I和IV，扇区II和V，扇区III和VI所对应的切换时间计算公式$T_{cm}$是相同的。</p>
+
+<table>
+  <tbody>
+    <tr>
+      <td>扇区</td>
+      <td>$T_{a}$</td>
+      <td>$T_{b}$</td>
+      <td>$T_{c}$</td>
+    </tr>
+    <tr>
+      <td>I</td>
+      <td>$-\frac{\sqrt{3}}{2}U_\alpha-\frac{1}{2}U_\beta$</td>
+      <td>$\frac{\sqrt{3}}{2}U_\alpha-\frac{3}{2}U_\beta$</td>
+      <td>$\frac{\sqrt{3}}{2}U_\alpha+\frac{1}{2}U_\beta$</td>
+    </tr>
+    <tr>
+      <td>II</td>
+      <td>$-U_\beta$</td>
+      <td>$-\sqrt{3}U_\alpha$</td>
+      <td>$U_\beta$</td>
+    </tr>
+    <tr>
+      <td>III</td>
+      <td>$\frac{\sqrt{3}}{2}U_\alpha-\frac{1}{2}U_\beta$</td>
+      <td>$\frac{\sqrt{3}}{2}U_\alpha+\frac{3}{2}U_\beta$</td>
+      <td>$-\frac{\sqrt{3}}{2}U_\alpha+\frac{1}{2}U_\beta$</td>
+    </tr>
+    <tr>
+      <td>IV</td>
+      <td>$\frac{\sqrt{3}}{2}U_\alpha+\frac{1}{2}U_\beta$</td>
+      <td>$\frac{\sqrt{3}}{2}U_\alpha-\frac{3}{2}U_\beta$</td>
+      <td>$-\frac{\sqrt{3}}{2}U_\alpha-\frac{1}{2}U_\beta$</td>
+    </tr>
+    <tr>
+      <td>V</td>
+      <td>$U_\beta$</td>
+      <td>$-\sqrt{3}U_\alpha$</td>
+      <td>$-U_\beta$</td>
+    </tr>
+    <tr>
+      <td>VI</td>
+      <td>$-\frac{\sqrt{3}}{2}U_\alpha+\frac{1}{2}U_\beta$</td>
+      <td>$\frac{\sqrt{3}}{2}U_\alpha+\frac{3}{2}U_\beta$</td>
+      <td>$\frac{\sqrt{3}}{2}U_\alpha-\frac{1}{2}U_\beta$</td>
+    </tr>
+  </tbody>
+</table>
+
+<table>
+  <tbody>
+    <tr>
+      <td>扇区</td>
+      <td>$T_{cm1}$</td>
+      <td>$T_{cm2}$</td>
+      <td>$T_{cm3}$</td>
+    </tr>
+    <tr>
+      <td>I</td>
+      <td>$-\frac{\sqrt{3}}{2}U_\alpha-\frac{1}{2}U_\beta$</td>
+      <td>$\frac{\sqrt{3}}{2}U_\alpha-\frac{3}{2}U_\beta$</td>
+      <td>$\frac{\sqrt{3}}{2}U_\alpha+\frac{1}{2}U_\beta$</td>
+    </tr>
+    <tr>
+      <td>II</td>
+      <td>$-\sqrt{3}U_\alpha$</td>
+      <td>$-U_\beta$</td>
+      <td>$U_\beta$</td>
+    </tr>
+    <tr>
+      <td>III</td>
+      <td>$-\frac{\sqrt{3}}{2}U_\alpha+\frac{1}{2}U_\beta$</td>
+      <td>$\frac{\sqrt{3}}{2}U_\alpha-\frac{1}{2}U_\beta$</td>
+      <td>$\frac{\sqrt{3}}{2}U_\alpha+\frac{3}{2}U_\beta$</td>
+    </tr>
+    <tr>
+      <td>IV</td>
+      <td>$-\frac{\sqrt{3}}{2}U_\alpha-\frac{1}{2}U_\beta$</td>
+      <td>$\frac{\sqrt{3}}{2}U_\alpha-\frac{3}{2}U_\beta$</td>
+      <td>$\frac{\sqrt{3}}{2}U_\alpha+\frac{1}{2}U_\beta$</td>
+    </tr>
+    <tr>
+      <td>V</td>
+      <td>$-\sqrt{3}U_\alpha$</td>
+      <td>$-U_\beta$</td>
+      <td>$U_\beta$</td>
+    </tr>
+    <tr>
+      <td>VI</td>
+      <td>$-\frac{\sqrt{3}}{2}U_\alpha+\frac{1}{2}U_\beta$</td>
+      <td>$\frac{\sqrt{3}}{2}U_\alpha-\frac{1}{2}U_\beta$</td>
+      <td>$\frac{\sqrt{3}}{2}U_\alpha+\frac{3}{2}U_\beta$</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>同样的，我们可以对扇区判断做简化，令三个临时变量：</p>
+
+\[\begin{align}
+    &amp;tmp_1 = U_\beta \\
+    &amp;tmp_2 = \frac{1}{2}U_\beta +\frac{\sqrt{3}}{2}U_\alpha\\
+    &amp;tmp_3 = tmp_2-tmp_1 
+\end{align}\]
+
+<p>通过下述代码，实现对切换时间的赋值。其中N和扇区的关系是一一对应。</p>
+
+<figure class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="no">N</span><span class="o">=</span><span class="mi">3</span><span class="p">;</span>
+<span class="no">N</span><span class="o">=</span><span class="p">(</span><span class="n">tmp2</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">)?(</span><span class="no">N</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span><span class="no">N</span><span class="p">;</span>
+<span class="no">N</span><span class="o">=</span><span class="p">(</span><span class="n">tmp3</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">)?(</span><span class="no">N</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span><span class="no">N</span><span class="p">;</span>
+<span class="no">N</span><span class="o">=</span><span class="p">(</span><span class="n">tmp1</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">)?(</span><span class="mi">7</span><span class="o">-</span><span class="no">N</span><span class="p">):</span><span class="no">N</span><span class="p">;</span>
+
+<span class="k">if</span><span class="p">(</span><span class="no">N</span><span class="o">==</span><span class="mi">1</span><span class="o">||</span><span class="no">N</span><span class="o">==</span><span class="mi">4</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="no">Tcm1</span> <span class="o">=</span> <span class="n">tmp2</span><span class="p">;</span>
+    <span class="no">Tcm2</span> <span class="o">=</span> <span class="n">tmp1</span> <span class="o">-</span> <span class="n">tmp3</span><span class="p">;</span>
+    <span class="no">Tcm3</span> <span class="o">=-</span><span class="n">tmp2</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="k">else</span> <span class="k">if</span><span class="p">(</span><span class="no">N</span><span class="o">==</span><span class="mi">2</span><span class="o">||</span><span class="no">N</span><span class="o">==</span><span class="mi">5</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="no">Tcm1</span> <span class="o">=</span> <span class="n">tmp3</span> <span class="o">+</span> <span class="n">tmp2</span><span class="p">;</span>
+    <span class="no">Tcm2</span> <span class="o">=</span> <span class="n">tmp1</span><span class="p">;</span>
+    <span class="no">Tcm3</span> <span class="o">=-</span><span class="n">tmp1</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="k">else</span>
+<span class="p">{</span>
+    <span class="no">Tcm1</span> <span class="o">=</span> <span class="n">tmp3</span><span class="p">;</span>
+    <span class="no">Tcm2</span> <span class="o">=-</span><span class="n">tmp3</span><span class="p">;</span>
+    <span class="no">Tcm3</span> <span class="o">=-</span><span class="n">tmp1</span><span class="o">-</span><span class="n">tmp2</span><span class="p">;</span>
+<span class="p">}</span></code></pre></figure>
+
+
+  </div>
+  
+  <footer class="post-footer">
+    <div class="post-author">
+      <div class="author-info">
+        <img src="/assets/images/avatar.jpg" alt="Feili" class="author-avatar">
+        <div>
+          <h4>Feili</h4>
+          <p>努力学习，天天向上</p>
+        </div>
+      </div>
+      <div class="author-meta">
+        <span>发布于 2025年06月04日</span>
+        <span>最后更新于 2025年06月04日</span>
+      </div>
+    </div>
+    
+    <div class="post-navigation">
+      
+        <a href="/motorcontrol/2025/06/03/PMSM_2.html" class="prev-post">
+          <span>上一篇</span>
+          <h4>PMSM电机控制（二）：数学模型的坐标变换</h4>
+        </a>
+      
+      
+      
+    </div>
+    
+    <div class="related-posts">
+      <h3>相关文章</h3>
+      <div class="related-grid">
+        
+        
+          <a href="/motorcontrol/2025/06/03/PMSM_2.html" class="related-card">
+            
+            <div class="related-content">
+              <h4>PMSM电机控制（二）：数学模型的坐标变换</h4>
+              <time>2025年06月03日</time>
+            </div>
+          </a>
+        
+          <a href="/motorcontrol/2025/05/30/PMSM_1.html" class="related-card">
+            
+            <div class="related-content">
+              <h4>PMSM电机控制（一）：永磁同步电机的基本模型</h4>
+              <time>2025年05月30日</time>
+            </div>
+          </a>
+        
+      </div>
+    </div>
+  </footer>
+</article>
+    </main>
+  </div>
+  <!-- 在页面底部包含搜索脚本 -->
+  <script src="/assets/js/search.js"></script>
+</body>
+</html>
