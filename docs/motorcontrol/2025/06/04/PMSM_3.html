@@ -89,15 +89,15 @@ MathJax = {
   </header>
   
   <div class="post-content">
-    <h2 id="一概述">一、概述</h2>
+    <h1 id="一概述">一、概述</h1>
 
 <p>SVPWM是由三相功率逆变器的六个功率开关元件组成的特定开关模式产生的脉宽调制波，能够使输出电流波形尽可能接近于理想的正弦波形。</p>
 
 <p>如图是一个经典的三相逆变电路。在算法模拟中，逆变器是虚拟的模型。在真实工况中，该逆变器是真实的元器件。通过控制这六个开关的导通和切断，配合左边的直流电压源，该逆变器可以在右侧电机定子相上产生所需要的正弦电压。这六个开关的开关状态是离散的，所以该算法很适合离散的数字系统。</p>
 
-<h2 id="二原理介绍">二、原理介绍</h2>
+<h1 id="二原理介绍">二、原理介绍</h1>
 
-<h3 id="21-空间矢量">2.1 空间矢量</h3>
+<h2 id="21-空间矢量">2.1 空间矢量</h2>
 
 <p>我们可以在三相绕组ABC的施加如下的相电压：</p>
 
@@ -247,7 +247,7 @@ U_{dc} &amp;= U_{AN}+U_{NB}
 <p>在8种组合电压空间矢量中，包括6个非零矢量以及2各零矢量。它们将复平面分成了六个扇区，如下图所示。
 <img src="http://localhost:4000/assets/images/PMSM_3_2.png" alt="扇区图" /></p>
 
-<h3 id="22-合成原理">2.2 合成原理</h3>
+<h2 id="22-合成原理">2.2 合成原理</h2>
 
 <p>SVPWM算法的理论基础是平均值等效原理，即在一个开关周期$T_s$内通过对基本电压矢量加以组合，使其平均值与给定电压矢量相等。以扇区I为例，如下图所示。
 <img src="http://localhost:4000/assets/images/PMSM_3_3.png" alt="电压矢量" />
@@ -279,9 +279,9 @@ U_{dc} &amp;= U_{AN}+U_{NB}
     &amp;T_0 = \frac{1}{2}(T_s-T_4-T_6)
 \end{align}\]
 
-<h2 id="三算法实现">三、算法实现</h2>
+<h1 id="三算法实现">三、算法实现</h1>
 
-<h3 id="31-扇区判断">3.1 扇区判断</h3>
+<h2 id="31-扇区判断">3.1 扇区判断</h2>
 
 <p>SVPWM算法首先需要知道要合成的参考电压向量$U_{out}$落在了哪个扇区。然后算法就可以根据该扇区相邻的两个非零向量和两个零向量来合成该参考电压向量。</p>
 
@@ -360,7 +360,7 @@ U_{dc} &amp;= U_{AN}+U_{NB}
   </tbody>
 </table>
 
-<h3 id="32-矢量作用时间计算">3.2 矢量作用时间计算</h3>
+<h2 id="32-矢量作用时间计算">3.2 矢量作用时间计算</h2>
 
 <p>仍然假设$U_{out}$落在第一扇区，可求得：</p>
 
@@ -476,7 +476,7 @@ U_{dc} &amp;= U_{AN}+U_{NB}
   </tbody>
 </table>
 
-<h2 id="四优化计算">四、优化计算</h2>
+<h1 id="四优化计算">四、优化计算</h1>
 
 <p>通过上述的推导，我们可以发现SVPWM的计算过程比较复杂。因此，我们可以通过优化其计算过程，减少对控制芯片算力的需求。
 通过对下表的计算可以看出（为简化计算，忽略部分相同系数）,扇区I和IV，扇区II和V，扇区III和VI所对应的切换时间计算公式$T_{cm}$是相同的。</p>
@@ -609,6 +609,8 @@ U_{dc} &amp;= U_{AN}+U_{NB}
     <span class="no">Tcm3</span> <span class="o">=-</span><span class="n">tmp1</span><span class="o">-</span><span class="n">tmp2</span><span class="p">;</span>
 <span class="p">}</span></code></pre></figure>
 
+<p>注：此种扇区判断的方式得出的$T_{cm}$符号与前述方法<strong>相反</strong>。</p>
+
 
   </div>
   
@@ -636,12 +638,25 @@ U_{dc} &amp;= U_{AN}+U_{NB}
       
       
       
+        <a href="/motorcontrol/2025/06/19/PMSM_4.html" class="next-post">
+          <span>下一篇</span>
+          <h4>PMSM电机控制（四）：PID的参数整定</h4>
+        </a>
+      
     </div>
     
     <div class="related-posts">
       <h3>相关文章</h3>
       <div class="related-grid">
         
+        
+          <a href="/motorcontrol/2025/06/19/PMSM_4.html" class="related-card">
+            
+            <div class="related-content">
+              <h4>PMSM电机控制（四）：PID的参数整定</h4>
+              <time>2025年06月19日</time>
+            </div>
+          </a>
         
           <a href="/motorcontrol/2025/06/03/PMSM_2.html" class="related-card">
             

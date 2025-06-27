@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>PMSM电机控制（四）：PID的参数整定</title>
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <!-- add support for mathjax by voleking-->
+  
+    <!-- MathJax 3.x 最新版 -->
+<script>
+MathJax = {
+  tex: {
+    inlineMath: [['$', '$'], ['\\(', '\\)']], // 内联公式分隔符
+    displayMath: [['$$', '$$'], ['\\[', '\\]']], // 块级公式分隔符
+    packages: {'[+]': ['physics']} // 可选：添加扩展包:cite[1]
+  },
+  svg: { fontCache: 'global' },
+  loader: { load: ['[tex]/physics'] } // 加载扩展包
+};
+</script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  
+</head>
+<body>
+  <div class="page-container">
+    <header class="site-header">
+  <nav class="navbar">
+    <div class="container">
+      <!-- 左侧导航链接 -->
+      <div class="nav-links">
+        
+          
+          <a href="/" 
+             >
+            首页
+          </a>
+        
+          
+          <a href="/motorcontrol" 
+             >
+            电机控制
+          </a>
+        
+      </div>
+      
+      <!-- 右侧搜索框 -->
+      <div class="search-container">
+        <form id="search-form" class="search-form">
+          <input type="text" id="search-input" placeholder="搜索文章..." aria-label="搜索文章">
+          <button type="submit" aria-label="搜索">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+            </svg>
+          </button>
+        </form>
+        <!-- 搜索结果悬浮层 -->
+        <div id="search-results" class="search-results"></div>
+      </div>
+    </div>
+  </nav>
+</header>
+    <main class="container">
+      <article class="post-article">
+  <header class="post-header">
+    <div class="post-meta">
+      
+      <time datetime="2025-06-19T00:00:00+08:00">
+        2025年06月19日
+      </time>
+      <span class="read-time">
+        
+        1 分钟阅读
+      </span>
+    </div>
+    
+    <h1 class="post-title">PMSM电机控制（四）：PID的参数整定</h1>
+    
+    
+    
+    <div class="post-tags">
+      
+        <span class="tag">PMSM</span>
+      
+        <span class="tag">PID</span>
+      
+    </div>
+    
+    
+  </header>
+  
+  <div class="post-content">
+    <h1 id="一概述">一、概述</h1>
+
+<p>在FOC控制中，常使用PID调节器用于电流环、转速环。对于PID调节器的参数整定方法，已经有大量的文献介绍。本文将介绍转速环PI和电流环PI的参数整定原理。</p>
+
+<h1 id="二前馈解耦-电流环pi整定">二、前馈解耦-电流环PI整定</h1>
+
+<h2 id="21-电机的传递函数">2.1 电机的传递函数</h2>
+
+<p>首先回顾第二章节中的式（11）：</p>
+
+\[\begin{align}
+    \left[\begin{matrix}
+    u_d \\
+    u_q
+\end{matrix}\right] =
+\left[\begin{matrix}
+    R_s &amp; -\omega_e L_q \\
+    \omega_e L_d &amp; Rs
+\end{matrix}\right]
+\left[\begin{matrix}
+    i_d\\
+    i_q
+\end{matrix}\right]+
+\left[\begin{matrix}
+    L_d &amp; 0 \\
+     0 &amp; L_q
+\end{matrix}\right]\frac{d}{dt}
+\left[\begin{matrix}
+    i_d\\
+    i_q
+\end{matrix}\right]+
+\left[\begin{matrix}
+    0\\
+    \omega_e \psi_f
+\end{matrix}\right]
+\end{align}\]
+
+<p>将该式重写为：</p>
+
+\[\begin{align}
+    \frac{d}{dt}i_d&amp;=-\frac{R_s}{L_d}i_d+\frac{L_q}{L_d}\omega_e i_q+\frac{1}{L_d}u_d \\
+    \frac{d}{dt}i_q&amp;=-\frac{R_s}{L_q}i_q-\frac{1}{L_q}\omega_e (L_di_d+\psi_f)+\frac{1}{L_q}u_q 
+\end{align} \tag{1}\]
+
+<p>从式（1）中可以看出，定子电流$i_d,i_q$分别在q轴和d轴方向产生耦合电压。为消除该耦合电压，我们可以令：</p>
+
+\[\begin{align}
+    u_{d0} &amp;= u_d +\omega_e L_q i_q = R_si_d + L_d\frac{d}{dt}i_d\\
+    u_{q0} &amp;=u_q-\omega_e (L_di_d+\psi_f)=R_si_q+L_q\frac{d}{dt}i_q
+\end{align} \tag{2}\]
+
+<p>其中：$u_{d0},u_{q0}$分别为解耦后的d轴和q轴电压。其中$\omega_e L_q i_q$ 和 $-\omega_e (L_di_d+\psi_f) $就是前馈项。对式（2）经过拉普拉斯变换后，可以得到：</p>
+
+\[\begin{matrix}
+    \left[\begin{matrix}
+        u_{d0}(s)\\
+        u_{q0}(s)
+    \end{matrix}\right] = 
+    \left[\begin{matrix}
+        R_s+sL_d &amp; 0\\
+        0 &amp;R_s+sL_q
+    \end{matrix}\right]
+    \left[\begin{matrix}
+        i_d(s)\\
+        i_q(s)
+    \end{matrix}\right] 
+\end{matrix}\]
+
+<p>令
+\(U(s)=\left[\begin{matrix}
+        u_{d0}(s)\\
+        u_{q0}(s)
+    \end{matrix}\right],
+    Y(s)=\left[\begin{matrix}
+        i_d(s)\\
+        i_q(s)
+    \end{matrix}\right],
+    G_m(s)=\left[\begin{matrix}
+        \frac{1}{R_s+sL_d} &amp; 0\\
+        0 &amp;\frac{1}{R_s+sL_q}
+    \end{matrix}\right]\)</p>
+
+<p>上式可以表示为：</p>
+
+\[Y(s)=G_m(s)U(s) \tag{3}\]
+
+<h2 id="22-pi的传递函数">2.2 PI的传递函数</h2>
+
+<p>让我们回顾下PID的表达公式：</p>
+
+\[u(t)=K_p(e(t)+\frac{1}{T_I}\int_0^t e(t))\]
+
+<p>其中：$u(t)$是PID调节器的输出值，$e(t)$表示PID调节器的偏差输入值，$T_I$是积分时间常数。对其拉普拉斯变化后，得到PI的传递函数为：</p>
+
+\[G_{pi}(s)=\frac{U(s)}{E(s)}=K_p(1+\frac{1}{T_Is})\]
+
+<p>d、q轴PID的传递函数可以表示为：</p>
+
+\[G_{pi}(s)=\left[\begin{matrix}
+    K_{pd}+K_{id}\frac{1}{s} &amp; 0\\
+    0 &amp; K_{pq}+K_{iq}\frac{1}{s}
+\end{matrix}\right] \tag{4}\]
+
+<h2 id="23-滞后环节的传递函数">2.3 滞后环节的传递函数</h2>
+<p>延迟传递函数：在实际计算过程中，CPU进入中断读取电流反馈值，然后进行PI调节器的计算，得到输出电压（或者三角波比较值），但是输出电压或者较值不是立即作用出去的，通常会延迟一个PWM周期，才会将比较值输出出去。这样就造成了采样和计算的延时。</p>
+
+<p>逆变器的传递函数：经过延迟环节，更新了三角波的比较值后，输出的电压是立刻作用到了负载上面吗？还不是的。需要经过逆变电路的调制，才能作用到电机上，通常这个环节会取0.5倍PWM周期的延迟。</p>
+
+<p>综上，在滞后环节里，共有$1.5T_s$的延迟。其中$T_s$表示开关周期。根据拉普拉斯变换的延时定理，滞后环节的传递函数可以表示为：</p>
+
+\[G_D(s)=e^{-1.5T_ss}\]
+
+<p>为方便后续的计算，我们可以对分母$e^{1.5T_ss}$泰勒展开，得到：</p>
+
+\[e^{1.5T_ss}=1+1.5T_ss+\frac{(1.5T_s)^2}{2}s^2+o(s^2)\]
+
+<p>实际控制系统中，$T_s$往往是us级别，二次项以及高阶无穷小往往可以忽略，因此，可以表示为：</p>
+
+\[e^{1.5T_ss}\approx 1+1.5T_ss\]
+
+<p>即，滞后环节的传递函数可以表示为：</p>
+
+\[G_D(s)\approx \frac{1}{1+1.5T_ss}\tag{5}\]
+
+<h2 id="24-pi参数整定">2.4 PI参数整定</h2>
+<p>结合式（3）,（4）,(5)，电流环的传递框图可以表示为:
+<img src="http://localhost:4000/assets/images/PMSM_4_1.png" alt="电流环传递框图" />
+电流环的开环传递函数可以表示为:</p>
+
+\[\begin{align}
+    G_i(s)&amp;=G_{pi}(s)*G_D(s)*G_m(s)\\
+    &amp;=(K_p+\frac{Ki}{s})*\frac{1}{1+1.5T_ss}*\frac{1}{R_s+Ls}\\
+    &amp;=\frac{K_i}{R_s}*\frac{1}{s(1+1.5T_ss)}*\frac{1+\frac{K_p}{K_i}s}{1+\frac{L}{R_s}s}
+\end{align}\]
+
+<p>从提高系统稳定性角度考虑，可以将PI调节器零点抵消电流控制器对象传递函数的极点，我们可以令</p>
+
+\[\frac{K_p}{K_i}=\frac{L}{R_s}\tag{6}\]
+
+<p>来抵消式中的第三项。最终，我们可以得到：</p>
+
+\[G_i(s)=\frac{K_i}{R_s}*\frac{1}{s(1+1.5T_ss)}\]
+
+<p>这是一个典型I系统。I系统的缺点是对斜坡和加速度输入的跟踪性能差。由于电流环常为单位阶跃输入，因此由I系统表示仍可以有较高的控制能力。典型I系统的开环传递函数表达式为：</p>
+
+\[W_1(s)=\frac{K}{s(Ts+1)}\]
+
+<p>其中$K=\frac{K_i}{R_s},T=1.5T_s$。</p>
+
+<p>典型I系统也是个二阶控制系统，传递函数写成标准形式为：</p>
+
+\[W_1(s)=\frac{\omega _n^2}{s^2+2\zeta \omega _ns+\omega _n^2}\]
+
+<p>其中：</p>
+
+\[\begin{align}
+    &amp;自然频率表示为：\omega _n=\sqrt{\frac{K}{T}}\\
+    &amp;阻尼比表示为：\zeta = \frac{1}{2\sqrt{KT}}\\
+\end{align}\]
+
+<p>在控制系统中，除了那些不允许有振荡的系统外，通常希望控制系统具有适当的阻尼、较快的响应速度和较快的调节时间。因此，二阶控制系统的设计，一般取$\zeta=0.4\sim0.8$。常用的，我们取阻尼比$\zeta=0.707$，即$KT=0.5$以获得均衡的控制性能。对于PI控制器，则：</p>
+
+\[\frac{K_i}{R_s}*1.5T_s = 0.5\tag{7}\]
+
+<p>联合式（6）和式（7），可以得到：</p>
+
+\[\begin{align}
+    K_p &amp;= \frac{L}{3T_s}\\
+    K_i &amp;= \frac{R_s}{3T_s}\tag{8}
+\end{align}\]
+
+<p>基于前馈解耦的PI整定，需要对电机模型的参数有精确的识别。然而，由于内置式PMSM凸极效应的存在，模型误差给系统造成的影响不可忽略，因此这种方式并不能实现完全的解耦。</p>
+
+<h1 id="三转速环pi整定">三、转速环PI整定</h1>
+<h2 id="31-电机的传递函数">3.1 电机的传递函数</h2>
+<p>永磁同步电机的电磁转矩方程为：</p>
+
+\[T_e=\frac{3}{2}p_ni_q[i_d(L_d-L_q)+\psi_f]\]
+
+<p>采用$i_d=0$控制时，电磁转矩中的$i_d$项可以忽略，$T_e=\frac{3}{2}p_ni_q\psi_f$,因此，这部分可以看成纯增益的环节。</p>
+
+\[G_T(s)=\frac{3}{2}p_n\psi_f \tag{9}\]
+
+<p>运动学方程为：</p>
+
+\[J\frac{d\omega_m}{dt}=T_e-T_L-B\omega_m\]
+
+<p>经过拉普拉斯变化后为：</p>
+
+\[J\omega_m s = T_e-T_L-B\omega_m\]
+
+<p>转矩和转速的传递函数为：</p>
+
+\[G_M(s)=\frac{1}{Js+B} \tag{10}\]
+
+<h2 id="32-pi的传递函数">3.2 PI的传递函数</h2>
+
+<p>PI的传递函数与电流环一致，为：</p>
+
+\[G_{pi}(s)=K_p+\frac{K_i}{s} \tag{11}\]
+
+<h2 id="33-滞后环节的传递函数">3.3 滞后环节的传递函数</h2>
+<p>在实际应用过程中，转速环计算出的控制指令通常要在下一个控制周期中作用，令转速环的控制周期为$T_d$，转速滞后环节的传递函数可以表示为：</p>
+
+\[G_D(s)=\frac{1}{T_ds+1} \tag{12}\]
+
+<h2 id="34-电流内环的传递函数">3.4 电流内环的传递函数</h2>
+
+<p>电流内环的传递函数</p>
+
+\[G_i(s)=\frac{K_i}{R_s}*\frac{1}{s(1+1.5T_ss)}\]
+
+<p>FOC采用的级联结构是一种串联结构，外环的控制指令作为内环的参考输入信号。为了实现在设计外环控制系统（往往对应着最终控制目标）时能够忽略内环控制系统的影响，从而简化外环设计，必然要求内环的动态（带宽）要远高于外环带宽，体现为外环控制指令可以被内环完美跟踪，外环控制性能能够直接代表最终控制性能。</p>
+
+<p>因此，在计算转速外环的参数时，可以把电流内环视作一阶惯性环节，它的作用相当于延时。又由于在实际运算过程中，往往电流环的带宽远高于转速环的带宽，因此可以把该环节的延时传递函数忽略，合并至转速环滞后环节的传递函数。</p>
+
+<h2 id="35-pi参数整定">3.5 PI参数整定</h2>
+
+<p>结合式（9）~（12），转速环的控制框图可以表示为
+<img src="http://localhost:4000/assets/images/PMSM_4_2.png" alt="转速环传递框图" />
+为了进一步简化转速环的计算，忽略负载转矩的扰动，忽略阻尼系数$B$，转速环的开环传递函数可以表示为：</p>
+
+\[\begin{align}
+    G_s(s)&amp;=G_{pi}(s)*G_D(s)*G_T(s)*G_M(s)\\
+    &amp;=\frac{K_ps+K_i}{s}*\frac{1}{T_ds+1}*\frac{3}{2}p_n\psi_f*\frac{1}{Js}\\
+    &amp;=\frac{3p_n\psi_f K_i}{2J}*\frac{\frac{K_p}{K_i}s+1}{s^2(T_ds+1)}
+\end{align}\]
+
+<p>这是一个典型II系统，它的通用开环传递函数表示形式为：</p>
+
+\[W_2(s)=\frac{K(\tau s+1)}{s^2(Ts+1)}\]
+
+<p>其中$K=\frac{3p_n\psi_f K_i}{2J}$，对应的是机械角速度。如果控制目标转速单位为rpm，那么$K_n=\frac{45p_n\psi_f K_i}{\pi J}$。</p>
+
+<p>同样的，典型II系统也是一个三阶系统，从传递函数中可以看出：</p>
+<ol>
+  <li>有两个纯积分环节，幅频特性初始斜率为-40dB，初始相位角度为-180°；</li>
+  <li>转折频率分为$\frac{1}{T_d}$和$\frac{1}{\tau}$。</li>
+</ol>
+
+<p>为了方便分析该控制系统，定义了新变量中频段$h=\lg\frac{1}{T_d}-\lg\frac{1}{\tau}$，它的意义是斜率为-20dB/sec的中频宽度。
+<strong>中频带宽</strong>和<strong>截止频率的相位裕度</strong>是我们转速环设计的指标。截止频率处的相位裕度比较好确定，至少为45°，且越大越好。中频带宽一般由采样时间来决定。</p>
+
+<p>假设电流环的采样频率为20kHz，电流环的采样周期$T_s=0.00005$，取转速环的采样周期是电流环的10倍，即$T_d=0.0005$。那么惯性环节的转折频率为$\frac{1}{T_d}=2000Hz$。而$\lg2000 = 3.3$，设计转速环中频带宽$h=2.0$，可以计算得出，微分环节的转折频率$\frac{1}{\tau}=20Hz$，那么$\tau=0.05$。</p>
+
+<p>接下来，我们需要设计相位裕度。我们知道相频曲线的最高点，肯定是相位裕度最大的点。并且，这个点正好是两个转折频率的中点。因此，我们将截止频率设计至两个转折频率的中点。仍以刚才的数据为例，$\lg\omega_c=\lg\frac{1}{T_d}-\frac{h}{2}$，可以得到，$\omega_c=\frac{1}{T_d*10^{\frac{h}{2}}}$</p>
+
+<p>截止频率和开环增益的关系为$\omega_c=K_n*\tau$。我们可以得到关系式：</p>
+
+\[\begin{align}
+    &amp;K_n=\frac{1}{T_d^2 10^{\frac{3h}{2}}}\\
+    &amp;\tau = T_d*10^h
+\end{align}\]
+
+<p>求解之后，得到：</p>
+
+\[\begin{align}
+    K_p &amp;= \frac{\pi J}{45p_n\psi_f T_d 10^{\frac{h}{2}}}\\
+    K_i &amp;= \frac{K_p}{T_d10^h}
+\end{align}\]
+
+<h1 id="四结语">四、结语</h1>
+<p>根据以上的推导过程可以看出，上述电流环和转速环的PI整定中，都用到了大量的近似或者忽略处理，实际应用过程中，仍需要大量的调试来确定pi参数。</p>
+
+  </div>
+  
+  <footer class="post-footer">
+    <div class="post-author">
+      <div class="author-info">
+        <img src="/assets/images/avatar.jpg" alt="Feili" class="author-avatar">
+        <div>
+          <h4>Feili</h4>
+          <p>努力学习，天天向上</p>
+        </div>
+      </div>
+      <div class="author-meta">
+        <span>发布于 2025年06月19日</span>
+        <span>最后更新于 2025年06月19日</span>
+      </div>
+    </div>
+    
+    <div class="post-navigation">
+      
+        <a href="/motorcontrol/2025/06/04/PMSM_3.html" class="prev-post">
+          <span>上一篇</span>
+          <h4>PMSM电机控制（三）：空间矢量调制</h4>
+        </a>
+      
+      
+      
+    </div>
+    
+    <div class="related-posts">
+      <h3>相关文章</h3>
+      <div class="related-grid">
+        
+        
+          <a href="/motorcontrol/2025/06/04/PMSM_3.html" class="related-card">
+            
+            <div class="related-content">
+              <h4>PMSM电机控制（三）：空间矢量调制</h4>
+              <time>2025年06月04日</time>
+            </div>
+          </a>
+        
+          <a href="/motorcontrol/2025/06/03/PMSM_2.html" class="related-card">
+            
+            <div class="related-content">
+              <h4>PMSM电机控制（二）：数学模型的坐标变换</h4>
+              <time>2025年06月03日</time>
+            </div>
+          </a>
+        
+          <a href="/motorcontrol/2025/05/30/PMSM_1.html" class="related-card">
+            
+            <div class="related-content">
+              <h4>PMSM电机控制（一）：永磁同步电机的基本模型</h4>
+              <time>2025年05月30日</time>
+            </div>
+          </a>
+        
+      </div>
+    </div>
+  </footer>
+</article>
+    </main>
+  </div>
+  <!-- 在页面底部包含搜索脚本 -->
+  <script src="/assets/js/search.js"></script>
+</body>
+</html>
